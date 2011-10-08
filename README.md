@@ -13,7 +13,7 @@ Nodee maintains a directory tree containing the software artifacts
 needed to run a service.  The structure of the tree looks a bit like
 that of a Maven repository.
 
-> /prefix/software/<groupId>/<artifact>/<version>
+> /prefix/software/groupId/artifact/version
 
 When installing artifacts into the above tree structure, Nodee fetches
 a ZIP file containing the artifact and then unpacks the artifact into
