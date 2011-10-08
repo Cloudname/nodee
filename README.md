@@ -73,7 +73,7 @@ thereby instances that are available for running services.  The
 current thinking is that each Nodee instance is responsible for
 maintaining an ephemeral node under:
 
-> /meta/<cell>/nodes/<instance name>
+> /meta/cell/nodes/<instance name>
 
 Where the *instance name* is equal to the machine name (for instance
 the Amazon EC2 instance name).
