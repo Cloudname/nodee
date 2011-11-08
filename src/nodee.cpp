@@ -1,0 +1,32 @@
+// Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
+
+#include "nodee.h"
+
+#include <stdio.h>
+
+#include "httplistener.h"
+#include "init.h"
+
+int main( int argc, char ** argv )
+{
+    if ( argc != 1 ) {
+	fprintf( stderr, "nodee: No command-line arguments.\n" );
+	exit( 1 );
+    }
+
+    HttpListener h6( HttpListener::V6, 40 );
+    HttpListener h4( HttpListener::V4, 40 );
+
+    if ( !h6.valid() && !h4.valid() ) {
+	fprintf( stderr,
+		 "nodee: "
+		 "Unable to listen to port 40 on either IPv4 or v6, "
+		 "exiting\n" );
+	exit( 1 );
+    }
+
+    Init i;
+    ChoreKeeper k;
+
+    exit( 0 );
+}
