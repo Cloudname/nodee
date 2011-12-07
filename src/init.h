@@ -3,7 +3,8 @@
 #ifndef INIT_H
 #define INIT_H
 
-#include "global.h"
+#include "process.h"
+#include <list>
 
 
 class Init
@@ -15,9 +16,10 @@ public:
     void operator()() { start(); } // what boost::thread wants
 
     void start();
+    void check();
 
 private:
-    std::list<class Process> l;
+    std::list<Process> l;
 };
 
 #endif

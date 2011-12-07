@@ -3,16 +3,18 @@
 #ifndef SERVERSPEC_H
 #define SERVERSPEC_H
 
-#include "global.h"
+#include <string>
+
+
+using namespace std;
 
 
 class ServerSpec
 {
-private:
+public:
     ServerSpec();
 
-public:
-    static ServerSpec parseJson( const String & );
+    static ServerSpec parseJson( const string & );
 
     string coordinate() const;
     int port() const;
@@ -20,7 +22,7 @@ public:
     int expectedPeakMemory() const;
     int value() const;
 
-    bool valid() const { return !s.isEmpty(); }
+    bool valid() const { return !c.empty(); }
 
 private:
     string c;

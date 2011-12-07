@@ -1,8 +1,13 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
+#include <string>
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 #include "serverspec.h"
 
-#include <boost/property_tree/json_parser.hpp>
+
 
 
 /*! \class ServerSpec serverspec.h
@@ -12,6 +17,22 @@
 
     Users generally submit this in JSON, this class parses it and
     makes it available to the user of this class.
+
+
+    {
+  "coordinate" : "1.idee-prod.ideeuser.ie",
+  "artifact" : "com.telenor:id-server:1.4.2",
+  "options" : {
+    "--someoption" : "some value",
+    "--anotheroption" : "more config"
+  },
+  "restart" : {
+    "period" : 120,
+    "maxrestarts" : 10,
+    "enabled" : true
+  }
+}
+
 */
 
 
@@ -20,7 +41,7 @@
 */
 
 ServerSpec::ServerSpec()
-    : p( 0 ), eim( 0 ), epm( 0 ), v( 0 )
+    : p( 0 ), eim( 0 ), epm(  0), v( 0 )
 {
     // nothing more needed
 }
@@ -30,16 +51,17 @@ ServerSpec::ServerSpec()
     failed, the object's coordinate() will be a null string afterwards.
 */
 
-ServerSpec ServerSpec::parseJson( const String & specification )
+ServerSpec ServerSpec::parseJson( const string & specification )
 {
-    using boost::property_tree::json_parser;
+    using boost::property_tree::ptree;
 
     ServerSpec s;
- 
+
     ptree pt;
     try {
-	read_json( istringstream( specification ), pt );
-    } catch ( json_parser_error ) {
+	istringstream i( specification );
+	read_json( i, pt );
+    } catch ( boost::property_tree::json_parser::json_parser_error e ) {
 	return s;
     }
 
@@ -49,7 +71,7 @@ ServerSpec ServerSpec::parseJson( const String & specification )
 	s.eim = pt.get<int>( "typicalram", 0 );
 	s.epm = pt.get<int>( "peakram", 0 );
 	s.v = pt.get<int>( "value", 0 );
-    } catch ( ptree_bad_data ) {
+    } catch ( boost::property_tree::ptree_bad_data e ) {
 	s.c.clear();
     }
 

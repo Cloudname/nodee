@@ -2,10 +2,15 @@
 
 #include "httplistener.h"
 
+#include "httpserver.h"
+
 #include <boost/thread.hpp>
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+
+#include <stdio.h>
 
 
 
@@ -18,8 +23,6 @@
 
 
 /*! Constructs an HTTP listener for \a port using \a family (V4 or V6).
-
-  After construction, the fd() is ready to watch.
 */
 
 HttpListener::HttpListener( Family family, int port )
@@ -27,34 +30,34 @@ HttpListener::HttpListener( Family family, int port )
     int retcode;
 
     if ( family == V4 ) {
-        setFd( ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) );
+        f = ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
 
 	int i = 1;
 	::setsockopt( f, SOL_SOCKET, SO_REUSEADDR, &i, sizeof (int) );
 
 	struct sockaddr_in addr;
-        addr.in.sin_family = AF_INET;
-        addr.in.sin_port = htons( port );
-        addr.in.sin_addr.s_addr = htonl( d->ip4a );
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons( port );
+        addr.sin_addr.s_addr = htonl( INADDR_ANY );
 
-	retcode = ::bind( fd(), (struct sockaddr *)&addr, sizeof( addr ) );
+	retcode = ::bind( f, (struct sockaddr *)&addr, sizeof( addr ) );
     }
     else {
-        setFd( ::socket( AF_INET6, SOCK_STREAM, IPPROTO_TCP ) );
+        f = ::socket( AF_INET6, SOCK_STREAM, IPPROTO_TCP );
 
 	int i = 1;
 	::setsockopt( f, SOL_SOCKET, SO_REUSEADDR, &i, sizeof (int) );
 
 	struct sockaddr_in6 addr;
-	addr.in6.sin6_family = AF_INET6;
-	addr.in6.sin6_port = htons( port );
-	int i = 0;
+	addr.sin6_family = AF_INET6;
+	addr.sin6_port = htons( port );
+	i = 0;
 	while ( i < 8 ) {
-	    addr.in6.sin6_addr.s6_addr16[i] = 0;
+	    addr.sin6_addr.s6_addr16[i] = 0;
 	    i++;
 	}
 
-	retcode = ::bind( fd(), (struct sockaddr *)&addr, sizeof( addr ) );
+	retcode = ::bind( f, (struct sockaddr *)&addr, sizeof( addr ) );
     }
 
     if ( retcode < 0 ) {
@@ -66,30 +69,43 @@ HttpListener::HttpListener( Family family, int port )
         }
     }
 
-    if ( ::listen( d->fd, 64 ) < 0 ) {
-	log( "listen( " + fn( d->fd ) + ", 64 ) for port " + fn( port() ) +
-	     " ) returned errno " + fn( errno ), Log::Debug );
-	return;
-    }
+    // we try to make the queue longer so that we can cope well with
+    // connection spikes, but if that fails we don't even sulk, we
+    // just go on.
+    (void)::listen( f, 64 );
 
     boost::thread( *this );
     // this lets the thread run unmanaged; when run() exits the object
-    // will be deallocated and 
+    // will be deallocated and
 }
 
 
-/*! Called to start the thread. Does all that the listener needs, and
-    finally cleans up and exits. */
+/*! Called to start the thread. Does all that the listener needs, which
+    doesn't involve very many lines of code.
+    
+    Never exits, which seems like a modest problem. I don't see any
+    reason why the 
 
-void HttpListener::run()
+*/
+
+void HttpListener::start()
 {
-    while( valid() ) {
-	int i = ::accept( fd(), 0, 0 );
-	if ( i < 0 ) {
-	    fprintf( "foo\n", errno );
-	    return;
-	}
-	boost::thread( HttpServer( i ) );
+    while( f >= 0 ) {
+	int i = ::accept( f, 0, 0 );
+	if ( i >= 0 )
+	    boost::thread( HttpServer( i ) );
+	else if ( errno != EAGAIN )
+	    f = -1;
     }
 }
- 
+
+
+
+/*! Returns true if the listener actually is listening to something,
+    and false if some problem prevents it from achieving anything.
+*/
+
+bool HttpListener::valid() const
+{
+    return f > 1;
+}

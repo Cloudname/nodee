@@ -2,18 +2,22 @@
 
 #include "httpserver.h"
 
+#include "serverspec.h"
+#include "process.h"
+
 #include <stdio.h>
+
+#include <algorithm>
 
 #include <boost/lexical_cast.hpp>
 
 
-
 /*! \class HttpServer httpserver.h
-  
+
   The HttpServer class provdes a HTTP server for Nodee's RESTful
   API. It expects to run in a thread of its own; the start() function
   does all the work, then exits.
-  
+
   I couldn't find embeddable HTTP server source I liked (technically
   plus BSD), so on the advice of James Antill, I applied some
   cut-and-paste. This server does not support the ASCII art from
@@ -37,7 +41,7 @@
 */
 
 HttpServer::HttpServer( int fd )
-    : Server( fd )
+    : o( Invalid ), cl( 0 ), f ( fd )
 {
     // nothing needed (yet?)
 }
@@ -52,10 +56,10 @@ void HttpServer::start()
 {
     while ( true ) {
 	readRequest();
-	if ( valid() && contentLength )
+	if ( f >= 0 && cl > 0 )
 	    readBody();
 
-	if ( !valid() )
+	if ( f < 0 )
 	    return;
 
 	respond();
@@ -92,7 +96,7 @@ void HttpServer::readRequest()
     int i = 0;
     while ( i < 32768 && !done ) {
 	char x;
-	int r = read( fd(), &x, 1 );
+	int r = ::read( f, &x, 1 );
 	if ( r < 0 ) {
 	    // an error. we don't care.
 	    close();
@@ -106,7 +110,7 @@ void HttpServer::readRequest()
 	    return;
 	}
 
-	h.append( x );
+	h += x;
 	i++;
 
 	// there are two ways to end a header: LFLF and CRLFCRLF
@@ -133,72 +137,73 @@ void HttpServer::readRequest()
 void HttpServer::parseRequest()
 {
     if ( !h.compare( 0, 4, "GET " ) ) {
-	operation = Get;
+	o = Get;
     } else if ( !h.compare( 0, 5, "POST " ) ) {
-	operation = Post;
+	o = Post;
     } else {
-	operation = Invalid;
+	o = Invalid;
     }
 
-    int p = 0;
+    int n = 0;
     int l = h.size();
-    while( p < l && h[p] != ' ' )
-	p++;
-    while( p < l && h[p] == ' ' )
-	p++;
-    int s = p;
-    while( p < l && h[p] != ' ' && h[p] != 10 )
-	p++;
-    
-    path = h.substr( s, p-s );
+    while( n < l && h[n] != ' ' )
+	n++;
+    while( n < l && h[n] == ' ' )
+	n++;
+    int s = n;
+    while( n < l && h[n] != ' ' && h[n] != 10 )
+	n++;
 
-    if ( operation != Post )
+    p = h.substr( s, n-s );
+
+    if ( o != Post )
 	return;
 
     // we need content-length. it's entirely case-insensitive, so we
-    // can smash case.
-    std::transform( h.begin(), h.end(), h.begin(), ::tolower() );
-    size_type pos = h.find( "\ncontent-length:" );
+    // can smash case and ignore non-ascii.
+    std::transform( h.begin(), h.end(), h.begin(), ::tolower );
+    size_t pos = h.find( "\ncontent-length:" );
     if ( pos == string::npos )
 	return;
-    p = pos + 16;
-    s = p;
-    while( p < l && h[p] == ' ' )
-	p++;
-    while ( headers[p] >= '0' && headers[p] <= '9' )
-	p++;
-    cl = boost::lexical_cast<int>( h.substr( s, p-s ) );
+    n = pos + 16;
+    s = n;
+    while( s < l && h[n] == ' ' )
+	n++;
+    while ( h[n] >= '0' && h[n] <= '9' )
+	n++;
+    cl = boost::lexical_cast<int>( h.substr( s, n-s ) );
 }
 
 
 /*! Reads a body, for POST.
-  
+
     On return, either the object will be valid() and the body() set,
     or the object will not be valid().
 */
 
 void HttpServer::readBody()
 {
-    if ( !contentLength )
+    if ( !cl )
 	return;
 
-    body = new char[contentLength];
+    char * tmp = new char[cl];
     int l = 0;
-    while ( l < contentLength ) {
-	int r = ::read( fd(), l+*a, contentLength-l );
+    while ( l < cl ) {
+	int r = ::read( f, l+tmp, cl-l );
 	if ( r < 0 ) {
 	    close();
-	    delete body;
-	    body = 0;
+	    delete[] tmp;
 	    return;
 	}
 	l += r;
     }
+    b = tmp;
+    delete[] tmp;
 }
 
 
 /*! Responds to the request, such as it is.
-  
+
     Effectively untestable. Could be separated out into smaller
     chunks, but I don't care right now.
 */
@@ -210,26 +215,33 @@ void HttpServer::respond()
 	return;
     }
 
-    if ( o == Post && path == "/process/launch" ) {
-	ServerSpec s( body );
+    if ( o == Post && p == "/process/launch" ) {
+	ServerSpec s = ServerSpec::parseJson( b );
 	if ( !s.valid() ) {
 	    send( httpResponse( 400, "text/plain",
 				"Parse error for the JSON body" ) );
 	} else {
-	    Launcher l( s );
-	    boost::thread( l );
+	    Process::launch( s );
 	    send( httpResponse( 200, "text/plain",
 				"Will launch, or try to" ) );
 	}
 	return;
     }
-    
+
     if ( o == Post ) {
 	send( httpResponse( 404, "text/plain",
 			    "No such response" ) );
 	return;
     }
-    
+
     // it's Get
-    
+}
+
+
+/*! Closes the socket and updates the state machine as needed. */
+
+void HttpServer::close()
+{
+    ::close( f );
+    f = -1;
 }

@@ -2,9 +2,14 @@
 
 #include "init.h"
 
+#include <boost/thread.hpp>
+
+#include <sys/types.h>
+#include <sys/wait.h>
+
 
 /*! \class Init init.h
-  
+
   The Init class manages all the subprocesses. Nothing to it, really.
 */
 
@@ -14,7 +19,7 @@
 
 Init::Init()
 {
-    boost::thread( *this );
+    boost::thread t( *this );
 }
 
 
@@ -64,6 +69,6 @@ void Init::check()
 	++i;
     if ( i != l.end() && i->pid() == pid ) {
 	i->handleExit( exitStatus, signal );
-	l.remove( i );
+	l.remove( *i );
     }
 }

@@ -3,22 +3,23 @@
 #ifndef HTTPLISTENER_H
 #define HTTPLISTENER_H
 
-#include "global.h"
 
-
-Class HttpListener
-    : public Server
+class HttpListener
 {
 public:
-    HttpListener();
+    enum Family { V4, V6 };
+
+    HttpListener( enum Family, int port );
     ~HttpListener();
 
     void operator()() { start(); } // what boost::thread wants
 
     void start();
 
+    bool valid() const;
+    
 private:
-    // nothing
-}
+    volatile int f;
+};
 
 #endif

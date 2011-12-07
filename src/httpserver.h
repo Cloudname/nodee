@@ -3,15 +3,18 @@
 #ifndef HTTPSERVER_H
 #define HTTPSERVER_H
 
-#include "global.h"
+#include <string>
+
+using namespace std;
 
 
 class HttpServer
-    : public Server
 {
 public:
+    enum Operation { Get, Post, Invalid };
+
     HttpServer( int );
-    
+
     void operator()() { start(); }
 
     void start();
@@ -26,6 +29,11 @@ public:
     string path() const;
 
     void respond();
+    void send( string );
+
+    string httpResponse( int, const string &, const string & );
+
+    void close();
 
 private:
     string p;
@@ -33,6 +41,7 @@ private:
     string b;
     Operation o;
     int cl;
+    int f;
 };
 
 

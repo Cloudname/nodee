@@ -1,10 +1,10 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
-#include "nodee.h"
-
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "httplistener.h"
+#include "chorekeeper.h"
 #include "init.h"
 
 int main( int argc, char ** argv )

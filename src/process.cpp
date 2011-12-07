@@ -2,12 +2,13 @@
 
 #include "process.h"
 
+#include <unistd.h>
 
 
 /*! Constructs a Process to look out for some child process.
 
     The caller manually has to hand ownership over to Init.
-    
+
     This class never kills or otherwise affects the child process, it
     merely records information about it, such as the
     expectedTypicalMemory() and value() of the process. Nodee uses
@@ -36,8 +37,8 @@ void Process::fork()
     if ( p )
 	return;
 
-    p = fork();
-    if ( p < 0 ) {
+    int tmp = ::fork();
+    if ( tmp < 0 ) {
 	// an error. record the problem somehow, then just return.
 	p = 0;
 	return;
@@ -45,8 +46,8 @@ void Process::fork()
 	// we're in the child.
 	start();
     } else {
-	// we're in the parent. p is set correctly, so we don't need
-	// to do anything.
+	// we're in the parent.
+	p = tmp;
     }
 }
 
@@ -63,4 +64,24 @@ void Process::handleExit( int status, int signal )
 {
     status = status;
     signal = signal;
+}
+
+
+/*! Called in the child process to start the child's work.
+
+*/
+
+void Process::start()
+{
+    
+}
+
+
+/*!
+
+*/
+
+void Process::launch( const ServerSpec & what )
+{
+    Process p;
 }
