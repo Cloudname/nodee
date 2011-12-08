@@ -14,8 +14,8 @@ int main( int argc, char ** argv )
 	exit( 1 );
     }
 
-    HttpListener h6( HttpListener::V6, 40 );
-    HttpListener h4( HttpListener::V4, 40 );
+    HttpListener h6( HttpListener::V6, 4040 );
+    HttpListener h4( HttpListener::V4, 4040 );
 
     if ( !h6.valid() && !h4.valid() ) {
 	fprintf( stderr,
@@ -26,7 +26,7 @@ int main( int argc, char ** argv )
     }
 
     Init i;
-    ChoreKeeper k;
 
-    exit( 0 );
+    ChoreKeeper k;
+    k.start();
 }

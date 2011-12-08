@@ -73,7 +73,7 @@ void Process::handleExit( int status, int signal )
 
 void Process::start()
 {
-    
+
 }
 
 
@@ -84,4 +84,12 @@ void Process::start()
 void Process::launch( const ServerSpec & what )
 {
     Process p;
+}
+
+
+/*! Constructs a copy of \a other. Deep copy, no sharing. */
+
+Process::Process( const Process & other )
+    : p( other.p ), s( other.s )
+{
 }

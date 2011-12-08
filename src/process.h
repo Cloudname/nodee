@@ -15,7 +15,7 @@ public:
     Process( const Process & );
     virtual ~Process() {}
 
-    int pid() const;
+    int pid() const { return p; }
 
     void fork();
     virtual void start();

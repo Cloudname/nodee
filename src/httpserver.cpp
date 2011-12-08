@@ -245,3 +245,38 @@ void HttpServer::close()
     ::close( f );
     f = -1;
 }
+
+
+/*! Returns a HTTP response string with \a numeric status, \a textual
+    explanation and \a contentType.
+ 
+    This function does most of what send() ought to do, but this is
+    easily testable and the same logic isend() would not be.
+*/
+
+string HttpServer::httpResponse( int numeric, const string & contentType,
+				 const string & textual )
+{
+    string r;
+    // we blithely assume that 100<=numeric<=999
+    r += boost::lexical_cast<string>( numeric );
+    r += " Ubi sunt latrinae?\r\n"
+	 "Connection: close\r\n"
+	 "Server: nodee\r\n"
+	 "Content-Type:: ";
+    r += textual;
+    r += "\r\n\r\n";
+    return r;
+}
+
+
+/*! Sends \a response. This function is untested, borderline
+    untestable, which is why it's simple.
+*/
+
+void HttpServer::send( string response )
+{
+    int r = ::write( f, response.data(), response.length() );
+    if ( r < response.length() )
+	close();
+}
