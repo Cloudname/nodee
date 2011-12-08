@@ -61,12 +61,9 @@ HttpListener::HttpListener( Family family, int port )
     }
 
     if ( retcode < 0 ) {
-        if ( errno == EADDRINUSE ) {
-	    fprintf( stderr,
-		     "Cannot listen to port %d "
-		     "because another process is occupying it", port );
-	    return;
-        }
+	::close( f );
+	f = -1;
+	return;
     }
 
     // we try to make the queue longer so that we can cope well with
@@ -82,9 +79,9 @@ HttpListener::HttpListener( Family family, int port )
 
 /*! Called to start the thread. Does all that the listener needs, which
     doesn't involve very many lines of code.
-    
+
     Never exits, which seems like a modest problem. I don't see any
-    reason why the 
+    reason why the
 
 */
 
