@@ -10,15 +10,14 @@ public:
     enum Family { V4, V6 };
 
     HttpListener( enum Family, int port );
-    ~HttpListener();
 
     void operator()() { start(); } // what boost::thread wants
 
     void start();
 
     bool valid() const;
-    
-private:
+
+public:
     volatile int f;
 };
 
