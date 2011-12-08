@@ -11,4 +11,5 @@ SOURCE=chorekeeper.cpp httplistener.cpp httpserver.cpp init.cpp \
 	nodee.cpp process.cpp serverspec.cpp
 
 nodee: ${SOURCE}
-	g++ -o nodee -pthread ${SOURCE}
+	clang -o nodee -pthread ${SOURCE} -lboost_thread
+
