@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# arguments:
+#  $1  the tar file to unpack
+#  $2  the directory where to store the files
+
+[ -e $2 ] && exit 0
+[ -f $1 ] || exit 1
+
+mkdir -p $2
+( cd $2 ; tar xf $1 )
+chmod -R go-w $2

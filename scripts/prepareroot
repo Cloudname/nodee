@@ -1,0 +1,58 @@
+#!/bin/sh
+#
+# arguments:
+#  $1  coordinate (expected to not contain / or space)
+#  $2  the URL where to get the tar file
+
+
+. $(dirname $0)/pathsetup
+
+WORK=$WORKDIR/$1
+PAYLOAD=$PAYLOADDIR/$(basename $2 .tar)
+TARFILE=$PAYLOADDIR/$(basename $2)
+
+# try to download, three times, at intervals
+[ -e $TARFILE ] || $(dirname $0)/download $2 $TARFILE
+[ -e $TARFILE ] || ( sleep 5 ; $(dirname $0)/download $2 $TARFILE )
+[ -e $TARFILE ] || ( sleep 15 ; $(dirname $0)/download $2 $TARFILE )
+
+# untar if we haven't
+[ ! -e $PAYLOAD ] && untar $TARFILE $PAYLOAD
+
+# at this point we must have the code we're going to run. die if we don't.
+[ -d $PAYLOAD ] || exit 1
+
+# if the work directory already existed, move it out of the way, to a
+# randomly named subdirectory. in principle, we clean those out later.
+[ -e $WORK ] && mv $WORK $(mktemp -d --tmpdir=$WORK old.XXXXXXXX.old)
+
+
+# find the UIDs currently used to run processes, and those allocated to users
+UIDS=$(ps an -o ruser ; cut -d: -f3 < /etc/passwd)
+
+# pick a random completely unused UID between UID_MIN and UID_MAX
+UID=$(echo $(seq $UID_MIN $UID_MAX) $UIDS \
+    | sort -n \
+    | uniq -u \
+    | sort -R \
+    | head -1)
+
+# ditto, groups
+GIDS=$(ps an -o rgid ; cut -d: -f4 < /etc/passwd)
+GID=$(echo $(seq $GID_MIN $GID_MAX) $GIDS \
+    | sort -n \
+    | uniq -u \
+    | sort -R \
+    | head -1)
+
+# this really, really should not happen...
+[ "$UID" = "" ] && exit 1
+[ "$GID" = "" ] && exit 1
+
+# finally make the directories where the server can run
+mkdir -p $WORK/{scratch,tmp,shadow}
+chown $UID:$GID $WORK/{scratch,tmp}
+cp -al $PAYLOAD/. $WORK/shadow/.
+
+# we have a UID, we have a file tree, we can run!
+[ -x $WORK/nodee/start ] && exec $DROPPRIVILEGES $UID $GID $WORK/nodee/start
