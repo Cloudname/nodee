@@ -97,7 +97,7 @@ Process::Process( const Process & other )
 
 /*! Records \a r as the current RSS, in kbytes */
 
-void Process::setCurrentRss( int \a r )
+void Process::setCurrentRss( int r )
 {
     rss = r;
 }
