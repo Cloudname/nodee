@@ -7,9 +7,14 @@ all: dropprivileges nodee
 dropprivileges: dropprivileges.c
 	clang -o dropprivileges $(CFLAGS) dropprivileges.c
 
-SOURCE=chorekeeper.cpp httplistener.cpp httpserver.cpp init.cpp \
-	nodee.cpp process.cpp serverspec.cpp
+OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
+	nodee.o process.o serverspec.o
 
-nodee: ${SOURCE}
-	clang -o nodee -pthread ${SOURCE} -lboost_thread
+.cpp.o:
+	clang -c -o $@ -O0 $<
 
+nodee: ${OBJECTS}
+	clang -o nodee -pthread $< -lboost_thread
+
+clean:
+	rm nodee dropprivileges *.o
