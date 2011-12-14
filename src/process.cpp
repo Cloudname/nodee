@@ -93,3 +93,36 @@ Process::Process( const Process & other )
     : p( other.p ), s( other.s )
 {
 }
+
+
+/*! Records \a r as the current RSS, in kbytes */
+
+void Process::setCurrentRss( int \a r )
+{
+    rss = r;
+}
+
+/*! Returns the recorder RSS size, in kbytes */
+int Process::currentRss() const
+{
+    return rss;
+}
+
+
+/*! Records that \a f faults have occured since time immemorial. */
+
+void Process::setPageFaults( int x )
+{
+    prevFaults = faults;
+    faults = x;
+}
+
+
+/*! Returns how many faults have occured between the last and second-to-last
+    calls to setPageFaults().
+*/
+
+int Process::recentPageFaults() const
+{
+    return faults - prevFaults;
+}

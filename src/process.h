@@ -8,22 +8,26 @@
 
 class Process
 {
-private:
-    Process(); // private so it can't be called
-
 public:
+    Process();
     Process( const Process & );
     virtual ~Process() {}
 
     int pid() const { return p; }
+    bool valid() const { return p > 0; }
 
     void fork();
     virtual void start();
     virtual void handleExit( int, int );
 
     int value() const;
-    int expectedTypicalMemory() const;
     int expectedPeakMemory() const;
+    int expectedTypicalMemory() const;
+
+    void setCurrentRss( int );
+    int currentRss() const;
+    void setPageFaults( int );
+    int recentPageFaults() const;
 
     bool operator==( const Process & other ) { return p == other.p; }
 
@@ -32,6 +36,9 @@ public:
 private:
     int p;
     ServerSpec s;
+    int faults;
+    int prevFaults;
+    int rss;
 };
 
 
