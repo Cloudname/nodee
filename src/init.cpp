@@ -72,3 +72,14 @@ void Init::check()
 	l.remove( *i );
     }
 }
+
+
+/*! Returns an iterator pointing to the head of the Process list. The
+    iterator may be used to change the processes, but not to add to or remove
+    from the list.
+*/
+
+std::list<Process>::iterator Init::processes()
+{
+    return l.begin();
+}

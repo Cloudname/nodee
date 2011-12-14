@@ -18,6 +18,8 @@ public:
     void start();
     void check();
 
+    std::list<Process>::iterator processes();
+
 private:
     std::list<Process> l;
 };
