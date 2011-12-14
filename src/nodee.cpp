@@ -27,6 +27,6 @@ int main( int argc, char ** argv )
 
     Init i;
 
-    ChoreKeeper k;
+    ChoreKeeper k( i );
     k.start();
 }

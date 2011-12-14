@@ -2,12 +2,20 @@
 
 #include "chorekeeper.h"
 
+#include <sys/types.h>
+#include <signal.h>
 #include <unistd.h>
+#include <sysexits.h>
+
 #include <iostream>
 #include <fstream>
 
+#include <map>
+#include <list>
+
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
 
 using namespace std;
@@ -27,8 +35,14 @@ using namespace std;
     perform chores.
 */
 
-ChoreKeeper::ChoreKeeper()
+ChoreKeeper::ChoreKeeper( Init & i )
+    : init( i )
 {
+    int n = 7;
+    while ( n > 0 ) {
+	thrashing[n] = false;
+	n--;
+    }
 }
 
 
@@ -37,40 +51,29 @@ ChoreKeeper::ChoreKeeper()
 void ChoreKeeper::start()
 {
     while( true ) {
-	sleep( 1 );
+	::sleep( 1 );
 	detectThrashing();
 	if ( isThrashing() ) {
-	    
+	    Process jesus;
+	    jesus = furthestOverPeak();
+	    if ( !jesus.valid() )
+		jesus = furthestOverExpected();
+	    if ( !jesus.valid() )
+		jesus = leastValuable();
+	    if ( !jesus.valid() )
+		jesus = biggest();
+	    if ( jesus.valid() ) {
+		// we kill with signal 9, since we're already in a bad  state.
+		::kill( jesus.pid(), 9 );
+		// but once that's done, we record that we're NOT
+		// thrashing, since it's quite likely that even after
+		// we've killed a process, others will need to page in
+		// their data, and we don't want to react to that
+		// activity by killing more processes.
+		thrashing[0] = false;
+	    }
 	}
     }
-}
-
-
-/*! Reads the memory status using /proc */
-
-void ChoreKeeper::readMemoryStatus()
-{
-
-}
-
-
-/*!
-
-*/
-
-void ChoreKeeper::readCpuStatus()
-{
-    
-}
-
-
-/*!
-
-*/
-
-void ChoreKeeper::adjustProcesses()
-{
-    
 }
 
 
@@ -196,4 +199,223 @@ void ChoreKeeper::readProcFile( const char * fileName,
 	// I use pgmajfault for input since that's about waiting, and
 	// waiting is the most important effect 
     }
+}
+
+struct RunningProcess {
+    RunningProcess(): pid( 0 ), ppid( 0 ), rss( 0 ), majflt( 0 ) {}
+    int pid;
+    int ppid;
+    int rss;
+    int majflt;
+};
+
+/*! Scans the Process table and the /proc/<pid>/stat files and finds out
+    how much memory each of our processes is using (including all children)
+    and how badly it is suffering from thrashing.
+*/
+
+void ChoreKeeper::scanProcesses()
+{
+    using namespace boost::filesystem;
+
+    path p ( "/proc");
+    map<int,RunningProcess> observed;
+    try {
+
+	directory_iterator i = directory_iterator( p );
+	while ( i != directory_iterator() ) {
+	    if ( p.filename()[0] <= '9' && is_directory( p ) ) {
+		string x = p.string();
+		x.append( "/stat" );
+		ifstream stat( x.data() );
+		string line;
+		getline( stat, line );
+
+		// the first four fields are pid, filename in parens,
+		// state and ppid. we have to get rid of the filename
+		// so it won't confuse the tokenizer (which wants
+		// space-separated thingies).
+
+		int i = 0;
+		while ( i < line.length() && line[i] != '(' )
+		    i++;
+		while ( i < line.length() && line[i] != ')' ) {
+		    if ( line[i] == '\\' ) // the kernel escapes rightparens
+			line[i++] = '0';
+		    line[i++] = '0';
+		}
+		if ( line[i] != ')' )
+		    line[i] = '0';
+		
+		boost::tokenizer<> tokens( line );
+		boost::tokenizer<>::iterator t = tokens.begin();
+
+		try {
+		    RunningProcess r;
+		    r.pid = boost::lexical_cast<int>( *t );
+		    ++t; // points to the nulls from above
+		    ++t; // points to the state ('D', 'R' or whatever)
+		    ++t; // points to the ppid
+		    r.ppid = boost::lexical_cast<int>( *t );
+		    ++t; // points to the process group
+		    ++t; // points to the session id
+		    ++t; // points to the tty number
+		    ++t; // points to the process group controller
+		    ++t; // points to the kernel flags
+		    ++t; // points to minflt
+		    ++t; // points to cminflt
+		    ++t; // points to majflt
+		    r.majflt = boost::lexical_cast<int>( *t );
+		    ++t; // points to cmajflt
+		    r.majflt += boost::lexical_cast<int>( *t );
+		    ++t; // points to user time ticks
+		    ++t; // points to kernel time ticks
+		    ++t; // points to waited-for child user time
+		    ++t; // points to waited-for child kernel time ticks
+		    ++t; // points to kernel real-time priority
+		    ++t; // points to niceness
+		    ++t; // points to numthreads
+		    ++t; // points to null
+		    ++t; // points to the process' start time
+		    ++t; // points to vsize
+		    ++t; // points to rss in pages
+		    r.rss = boost::lexical_cast<int>( *t );
+		    observed[r.pid] = r;
+		} catch ( boost::bad_lexical_cast ) {
+		    // if it's not a number it's something else, which
+		    // we ignore
+		}
+	    }
+	    ++i;
+	}
+    } catch (const filesystem_error& ex) {
+	// kill all processes or just fail?
+	::exit( EX_SOFTWARE );
+    }
+
+    map<int,RunningProcess>::iterator i = observed.begin();
+    while ( i != observed.end() ) {
+	pid_t me = getpid();
+	pid_t mother = i->second.pid;
+	while ( mother &&
+	        observed[mother].ppid &&
+	        observed[mother].ppid != me )
+	    mother = observed[mother].ppid;
+	if ( observed[mother].pid != i->second.pid ) {
+	    observed[mother].rss += i->second.rss;
+	    observed[mother].majflt += i->second.majflt;
+	}
+	++i;
+    }
+    
+    list<Process>::iterator m = init.processes();
+    while ( m != list<Process>::iterator() ) {
+	m->setCurrentRss( observed[m->pid()].rss );
+	m->setPageFaults( observed[m->pid()].majflt );
+	++m;
+    }
+}
+
+
+/*! Scans the Process table and finds the process whose memory usage
+    is furthest above its stated peak. Returns an invalid Process if
+    none are above their peak.
+*/
+
+Process ChoreKeeper::furthestOverPeak() const
+{
+    Process p;
+    list<Process>::iterator m( init.processes() );
+    while ( m != list<Process>::iterator() ) {
+	int over = m->currentRss() - m->expectedPeakMemory();
+	if ( over > 0 &&
+	     ( !p.valid() ||
+	       over > p.currentRss() - p.expectedPeakMemory() ) )
+	    p = *m;
+	++m;
+    }
+
+    return p;
+}
+
+/*! Scans the Process table and finds the process whose memory usage
+    is furthest above it stated typical memory usage. Returns an invalid
+    Process if none are above their expected typical size.
+*/
+
+Process ChoreKeeper::furthestOverExpected() const
+{
+    Process p;
+    list<Process>::iterator m( init.processes() );
+    while ( m != list<Process>::iterator() ) {
+	int over = m->currentRss() - m->expectedTypicalMemory();
+	if ( over > 0 &&
+	     ( !p.valid() ||
+	       over > p.currentRss() - p.expectedTypicalMemory() ) )
+	    p = *m;
+	++m;
+    }
+
+    return p;
+}
+
+
+/*! Scans the Process table and finds the least important
+    process. Returns an invalid Process if none are less important
+    than the most important Process.
+*/
+
+Process ChoreKeeper::leastValuable() const
+{
+    Process max;
+    Process min;
+    list<Process>::iterator m( init.processes() );
+    while ( m != list<Process>::iterator() ) {
+	if ( !max.valid() || max.value() < m->value() )
+	    max = *m;
+	if ( !min.valid() || min.value() > m->value() )
+	    min = *m;
+	++m;
+    }
+    if ( min.valid() && min.value() < max.value() )
+	return min;
+    return Process();
+}
+
+
+/*! Scans the Process table and finds the Process that's most negatively
+    affected by thrashing. Returns an invalid Process if none are noticeably
+    worse affected than the others.
+*/
+
+Process ChoreKeeper::thrashingMost() const
+{
+    Process p;
+    list<Process>::iterator m( init.processes() );
+    while ( m != list<Process>::iterator() ) {
+	if ( m->recentPageFaults() > p.recentPageFaults() )
+	    p = *m;
+	++m;
+    }
+
+    return p;
+}
+
+
+/*! Scans the Process table and finds the process whose memory usage
+    is biggest. Returns an invalid Process only if no Processes are
+    being managed by Nodee.
+*/
+
+Process ChoreKeeper::biggest() const
+{
+    Process p;
+    list<Process>::iterator m( init.processes() );
+    while ( m != list<Process>::iterator() ) {
+	if ( !p.valid() || m->currentRss() > p.currentRss() )
+	    p = *m;
+	++m;
+    }
+
+    return p;
 }

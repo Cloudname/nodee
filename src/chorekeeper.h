@@ -3,29 +3,35 @@
 #ifndef CHOREKEEPER_H
 #define CHOREKEEPER_H
 
+#include "process.h"
+#include "init.h"
+
 
 class ChoreKeeper
 {
 public:
-    ChoreKeeper();
+    ChoreKeeper( Init & );
     virtual ~ChoreKeeper();
 
     void start();
 
     void detectThrashing();
     bool isThrashing() const;
-    
-    void readMemoryStatus();
-    void readCpuStatus();
-    void adjustProcesses();
+
+    void scanProcesses();
+
+    Process furthestOverPeak() const;
+    Process furthestOverExpected() const;
+    Process leastValuable() const;
+    Process thrashingMost() const;
+    Process biggest() const;
 
 private:
     void readProcFile( const char *, int &, int &, int & );
 	
 private:
     bool thrashing[8];
-    
-    
+    Init & init;
 };
 
 #endif
