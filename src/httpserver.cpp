@@ -56,6 +56,7 @@ void HttpServer::start()
 {
     while ( true ) {
 	readRequest();
+	parseRequest();
 	if ( f >= 0 && cl > 0 )
 	    readBody();
 
@@ -165,10 +166,10 @@ void HttpServer::parseRequest()
     if ( pos == string::npos )
 	return;
     n = pos + 16;
-    s = n;
-    while( s < l && h[n] == ' ' )
+    while( n < l && h[n] == ' ' )
 	n++;
-    while ( h[n] >= '0' && h[n] <= '9' )
+    s = n;
+    while ( n < l && h[n] >= '0' && h[n] <= '9' )
 	n++;
     cl = boost::lexical_cast<int>( h.substr( s, n-s ) );
 }
@@ -185,7 +186,7 @@ void HttpServer::readBody()
     if ( !cl )
 	return;
 
-    char * tmp = new char[cl];
+    char * tmp = new char[cl+1];
     int l = 0;
     while ( l < cl ) {
 	int r = ::read( f, l+tmp, cl-l );
@@ -196,6 +197,7 @@ void HttpServer::readBody()
 	}
 	l += r;
     }
+    tmp[cl] = '\0';
     b = tmp;
     delete[] tmp;
 }
@@ -211,6 +213,7 @@ void HttpServer::respond()
 {
     if ( o == Invalid ) {
 	send( httpResponse( 400, "text/plain", "Utterly total parse error" ) );
+	close();
 	return;
     }
 
@@ -224,16 +227,19 @@ void HttpServer::respond()
 	    send( httpResponse( 200, "text/plain",
 				"Will launch, or try to" ) );
 	}
+	close();
 	return;
     }
 
     if ( o == Post ) {
 	send( httpResponse( 404, "text/plain",
 			    "No such response" ) );
+	close();
 	return;
     }
 
     // it's Get
+    
 }
 
 
@@ -259,11 +265,13 @@ string HttpServer::httpResponse( int numeric, const string & contentType,
     string r;
     // we blithely assume that 100<=numeric<=999
     r += boost::lexical_cast<string>( numeric );
-    r += " Ubi sunt latrinae?\r\n"
+    r += " ";
+    r += textual;
+    r += "\r\n"
 	 "Connection: close\r\n"
 	 "Server: nodee\r\n"
-	 "Content-Type:: ";
-    r += textual;
+	 "Content-Type: ";
+    r += contentType;
     r += "\r\n\r\n";
     return r;
 }
