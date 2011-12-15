@@ -14,8 +14,8 @@
 #include <list>
 
 #include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 
 using namespace std;
@@ -214,6 +214,61 @@ struct RunningProcess {
     int majflt;
 };
 
+
+RunningProcess parseProcStat( string line ) 
+    throw ( boost::bad_lexical_cast )
+{
+    // the first four fields are pid, filename in parens,
+    // state and ppid. we have to get rid of the filename
+    // so it won't confuse the tokenizer (which wants
+    // space-separated thingies).
+
+    int i = 0;
+    while ( i < line.length() && line[i] != '(' )
+        i++;
+    while ( i < line.length() && line[i] != ')' ) {
+        if ( line[i] == '\\' ) // the kernel escapes rightparens
+	    line[i++] = '0';
+        line[i++] = '0';
+    }
+    if ( line[i] != ')' )
+        line[i] = '0';
+    
+    boost::tokenizer<> tokens( line );
+    boost::tokenizer<>::iterator t = tokens.begin();
+
+    RunningProcess r;
+    r.pid = boost::lexical_cast<int>( *t );
+    ++t; // points to the nulls from above
+    ++t; // points to the state ('D', 'R' or whatever)
+    ++t; // points to the ppid
+    r.ppid = boost::lexical_cast<int>( *t );
+    ++t; // points to the process group
+    ++t; // points to the session id
+    ++t; // points to the tty number
+    ++t; // points to the process group controller
+    ++t; // points to the kernel flags
+    ++t; // points to minflt
+    ++t; // points to cminflt
+    ++t; // points to majflt
+    r.majflt = boost::lexical_cast<int>( *t );
+    ++t; // points to cmajflt
+    r.majflt += boost::lexical_cast<int>( *t );
+    ++t; // points to user time ticks
+    ++t; // points to kernel time ticks
+    ++t; // points to waited-for child user time
+    ++t; // points to waited-for child kernel time ticks
+    ++t; // points to kernel real-time priority
+    ++t; // points to niceness
+    ++t; // points to numthreads
+    ++t; // points to null
+    ++t; // points to the process' start time
+    ++t; // points to vsize
+    ++t; // points to rss in pages
+    r.rss = boost::lexical_cast<int>( *t );
+    return r;
+}
+
 /*! Scans the Process table and the /proc/<pid>/stat files and finds out
     how much memory each of our processes is using (including all children)
     and how badly it is suffering from thrashing.
@@ -235,60 +290,12 @@ void ChoreKeeper::scanProcesses()
 		ifstream stat( x.data() );
 		string line;
 		getline( stat, line );
-
-		// the first four fields are pid, filename in parens,
-		// state and ppid. we have to get rid of the filename
-		// so it won't confuse the tokenizer (which wants
-		// space-separated thingies).
-
-		int i = 0;
-		while ( i < line.length() && line[i] != '(' )
-		    i++;
-		while ( i < line.length() && line[i] != ')' ) {
-		    if ( line[i] == '\\' ) // the kernel escapes rightparens
-			line[i++] = '0';
-		    line[i++] = '0';
-		}
-		if ( line[i] != ')' )
-		    line[i] = '0';
-		
-		boost::tokenizer<> tokens( line );
-		boost::tokenizer<>::iterator t = tokens.begin();
-
 		try {
-		    RunningProcess r;
-		    r.pid = boost::lexical_cast<int>( *t );
-		    ++t; // points to the nulls from above
-		    ++t; // points to the state ('D', 'R' or whatever)
-		    ++t; // points to the ppid
-		    r.ppid = boost::lexical_cast<int>( *t );
-		    ++t; // points to the process group
-		    ++t; // points to the session id
-		    ++t; // points to the tty number
-		    ++t; // points to the process group controller
-		    ++t; // points to the kernel flags
-		    ++t; // points to minflt
-		    ++t; // points to cminflt
-		    ++t; // points to majflt
-		    r.majflt = boost::lexical_cast<int>( *t );
-		    ++t; // points to cmajflt
-		    r.majflt += boost::lexical_cast<int>( *t );
-		    ++t; // points to user time ticks
-		    ++t; // points to kernel time ticks
-		    ++t; // points to waited-for child user time
-		    ++t; // points to waited-for child kernel time ticks
-		    ++t; // points to kernel real-time priority
-		    ++t; // points to niceness
-		    ++t; // points to numthreads
-		    ++t; // points to null
-		    ++t; // points to the process' start time
-		    ++t; // points to vsize
-		    ++t; // points to rss in pages
-		    r.rss = boost::lexical_cast<int>( *t );
+		    RunningProcess r( parseProcStat( line ) );
 		    observed[r.pid] = r;
-		} catch ( boost::bad_lexical_cast ) {
-		    // if it's not a number it's something else, which
-		    // we ignore
+		} catch (  boost::bad_lexical_cast ) {
+		    // if parseProcStat throws, then we just don't
+		    // manage that process
 		}
 	    }
 	    ++i;

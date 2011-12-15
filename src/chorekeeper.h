@@ -7,6 +7,7 @@
 #include "init.h"
 
 
+
 class ChoreKeeper
 {
 public:
@@ -26,6 +27,7 @@ public:
     Process leastValuable() const;
     Process thrashingMost() const;
     Process biggest() const;
+
 
 private:
     void readProcVmstat( const char *, int &, int &, int & );
