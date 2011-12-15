@@ -17,6 +17,7 @@ public:
 
     void detectThrashing();
     bool isThrashing() const;
+    static bool oneBitOfThrashing( int, int, int );
 
     void scanProcesses();
 
@@ -27,7 +28,7 @@ public:
     Process biggest() const;
 
 private:
-    void readProcFile( const char *, int &, int &, int & );
+    void readProcVmstat( const char *, int &, int &, int & );
 	
 private:
     bool thrashing[8];

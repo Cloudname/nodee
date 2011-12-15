@@ -106,43 +106,45 @@ void ChoreKeeper::detectThrashing()
     int pgmajfault = 0; // times a process has had to wait for a page from disk
     int pgpgout = 0; // times something has been written to disk
 
-    readProcFile( "/proc/vmstat", nr_free_pages, pgmajfault, pgpgout );
+    readProcVmstat( "/proc/vmstat", nr_free_pages, pgmajfault, pgpgout );
 
     int n = 7;
     while ( n > 0 ) {
 	thrashing[n] = thrashing[n-1];
 	n--;
     }
-    
+
+    thrashing[0] = oneBitOfThrashing( nr_free_pages, pgmajfault, pgpgout );
+}
+
+
+bool ChoreKeeper::oneBitOfThrashing( int nr_free_pages, int pgmajfault, int pgpgout )
+{
     // heuristic hell here
 
-    // rule 1. we're not threashing
-    thrashing[0] = false;
-
-    // rule 2. if we have megabytes of unused RAM, we can't be
+    // rule 1. if we have megabytes of unused RAM, we can't be
     // thrashing.
     if ( nr_free_pages > 5000 )
-	return;
+	return false;
 
-    // rule 3. if we're paging in anything, we are thrashing.
+    // rule 2. if we're paging in anything, we are thrashing.
     if ( pgmajfault > 3 ) {
 	// 3 is very low, but it only applies when we're out of RAM,
 	// and isThrashing() will ensure that we have to be paging in
 	// in eight consecutive seconds, so I think a low threshold is
 	// good.
-	thrashing[0] = true;
-	return;
+	return true;
     }
 
-    // rule 4. if we aren't writing, we aren't thrashing.
+    // rule 3. if we aren't writing, we aren't thrashing.
     if ( pgpgout < 3 ) {
 	// this is tricky, and perhaps not good. if we're out of RAM
 	// (see rule 2) but aren't paging in anything (see rule 3)
 	// then being out of RAM can't be a real problem. right?
-	return;
+	return false;
     }
 
-    thrashing[0] = true;
+    return true;
 }
 
 
@@ -165,10 +167,10 @@ bool ChoreKeeper::isThrashing() const
     nr_free_pages, \a pgmajfault and \a pgpgout.
 */
 
-void ChoreKeeper::readProcFile( const char * fileName,
-				int & nr_free_pages,
-				int & pgmajfault,
-				int & pgpgout )
+void ChoreKeeper::readProcVmstat( const char * fileName,
+				  int & nr_free_pages,
+				  int & pgmajfault,
+				  int & pgpgout )
 {
     ifstream vmstat( fileName );
     nr_free_pages = 0; // pages currently unused
