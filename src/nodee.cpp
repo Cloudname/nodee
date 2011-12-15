@@ -23,7 +23,7 @@ int main( int argc, char ** argv )
 	( "help", "produce help message" )
 	( "port,P", value<int>( &port )->default_value(40), 
 	  "set nodee TCP port" )
-	( "zookeeper", value<string>(), "input file" );
+	( "zookeeper", value<string>(), "zookeeper location" );
 
     variables_map vm;
     store( parse_command_line( argc, argv, desc ), vm );
