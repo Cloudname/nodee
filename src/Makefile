@@ -11,10 +11,10 @@ OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
 	nodee.o process.o serverspec.o
 
 .cpp.o:
-	clang -c -o $@ -O0 $<
+	g++ -c -o $@ -O0 $<
 
 nodee: ${OBJECTS}
-	clang -o nodee -pthread $< -lboost_thread
+	g++ -o nodee -pthread ${OBJECTS} -lboost_thread -lboost_filesystem
 
 clean:
 	rm nodee dropprivileges *.o

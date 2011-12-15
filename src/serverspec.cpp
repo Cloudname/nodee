@@ -100,11 +100,11 @@ int ServerSpec::port() const
 }
 
 
-/*! Returns the expected initial memory consumption of the server in
+/*! Returns the expected typical memory consumption of the server in
     kilobytes, or 0 if none was specified.
 */
 
-int ServerSpec::expectedInitialMemory() const
+int ServerSpec::expectedTypicalMemory() const
 {
     return eim;
 }

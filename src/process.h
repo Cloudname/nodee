@@ -20,9 +20,9 @@ public:
     virtual void start();
     virtual void handleExit( int, int );
 
-    int value() const;
-    int expectedPeakMemory() const;
-    int expectedTypicalMemory() const;
+    int value() const { return s.value(); }
+    int expectedPeakMemory() const { return s.expectedPeakMemory(); }
+    int expectedTypicalMemory() const { return s.expectedTypicalMemory(); }
 
     void setCurrentRss( int );
     int currentRss() const;

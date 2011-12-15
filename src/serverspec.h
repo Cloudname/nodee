@@ -18,7 +18,7 @@ public:
 
     string coordinate() const;
     int port() const;
-    int expectedInitialMemory() const;
+    int expectedTypicalMemory() const;
     int expectedPeakMemory() const;
     int value() const;
 
