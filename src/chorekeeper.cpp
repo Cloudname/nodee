@@ -174,11 +174,13 @@ void ChoreKeeper::readProcFile( const char * fileName,
     nr_free_pages = 0; // pages currently unused
     pgmajfault = 0; // times a process has had to wait for a page from disk
     pgpgout = 0; // times something has been written to disk
+    boost::char_separator<char> space( " " );
     while ( vmstat ) {
 	string line;
 	getline( vmstat, line );
-	boost::tokenizer<> t( line );
-	boost::tokenizer<>::iterator i = t.begin();
+	if ( !line.empty() ) {
+	boost::tokenizer<boost::char_separator<char> > t( line, space );
+	boost::tokenizer<boost::char_separator<char> >::iterator i = t.begin();
 	string n = *i;
 	++i;
 	int v = boost::lexical_cast<int>( *i );
@@ -197,7 +199,8 @@ void ChoreKeeper::readProcFile( const char * fileName,
 	    pgpgout = v;
 
 	// I use pgmajfault for input since that's about waiting, and
-	// waiting is the most important effect 
+	// waiting is the most important effect of thrashing
+        }
     }
 }
 
