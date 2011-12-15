@@ -86,8 +86,6 @@ void HttpServer::readRequest()
     b.erase();
     h.erase();
 
-    h.resize( 32769 );
-
     // first, we read the header, one byte at a time. this is
     // generally considered inefficient, but if we're going to spin up
     // a JVM as a result of this request, who cares about a few hundred
@@ -95,7 +93,7 @@ void HttpServer::readRequest()
     bool done = false;
     int i = 0;
     while ( i < 32768 && !done ) {
-	char x;
+	char x[2];
 	int r = ::read( f, &x, 1 );
 	if ( r < 0 ) {
 	    // an error. we don't care.
@@ -110,6 +108,7 @@ void HttpServer::readRequest()
 	    return;
 	}
 
+	x[1] = 0;
 	h += x;
 	i++;
 
