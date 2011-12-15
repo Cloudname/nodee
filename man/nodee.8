@@ -1,0 +1,58 @@
+.\" Copyright 2011 Arnt Gulbrandsen; BSD-licensed
+.TH nodee 8 2011-12-24 cloudname.org "Cloudname documentation"
+.SH NAME
+nodee - daemon to start and monitor cloudname hosts
+.SH SYNOPSIS
+.B $BINDIR/nodee
+[ --port | -P
+.I port
+]
+[ --zookeeper
+.I url
+]
+.SH DESCRIPTION
+.nh
+.PP
+.B nodee
+is an
+.BR init (8)-like
+daemon to start, manage and stop services running within a Cloudname cluster.
+.PP
+Once started,
+.B nodee
+is managed completely using its embedded web server. There is a RESTful
+HTTP API to start/stop services, and additionally
+.B nodee
+records some information about the host on which it runs using
+.B zookeeper 
+so that Cloudname users may know that the host exists and how it can be
+used.
+.SH OPTIONS
+The --help flag emit terse help text.
+.PP
+The --port (-P) flag allows running
+.B nodee
+on a different port than its default 40.
+.PP
+The --zookeeper flag specifies where to 
+.SH HTTP API
+Nothing written yet.
+.PP
+[Something will be, though.
+.SH DIAGNOSTICS
+The return code of
+.B nodee
+is zero if all goes well, and a non-zero in case of errors.
+.PP
+All diagnostics are logged via stderr.
+.SH BUGS
+Well, well. Very likely.
+.SH AUTHOR
+The Cloudname developers, primarily
+Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>
+.SH VERSION
+This man page covers nodee version $VERSION, released $DATE,
+http://cloudname.org/nodee/$VERSION
+.SH SEE ALSO
+http://cloudname.org,
+https://github.org/arnt/nodee
