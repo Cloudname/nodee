@@ -13,9 +13,16 @@ OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
 .cpp.o:
 	g++ -g -c -o $@ -O0 $<
 
+ifeq ($(shell ./platform.sh), oneiric)
+BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_system \
+		-lboost_program_options
+endif
+ifeq ($(shell ./platform.sh), lucid)
+BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options
+endif
+
 nodee: ${OBJECTS}
-	g++ -g -o nodee -pthread ${OBJECTS} \
-		-lboost_thread -lboost_filesystem -lboost_program_options
+	g++ -g -o nodee -pthread ${OBJECTS} ${BOOSTLIBS}
 
 clean:
 	rm nodee dropprivileges *.o
