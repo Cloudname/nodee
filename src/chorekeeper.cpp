@@ -52,6 +52,7 @@ void ChoreKeeper::start()
 {
     while( true ) {
 	::sleep( 1 );
+	scanProcesses();
 	detectThrashing();
 	if ( isThrashing() ) {
 	    Process jesus;
@@ -86,7 +87,7 @@ ChoreKeeper::~ChoreKeeper()
 
 /*! This function looks at whether the host appears to be thrashing,
     and stores the result in instance variables.
- 
+
     It's a little difficult to define thrashing. I tried to
     experiment, but gathering data during thrashing is such a pain.
 
@@ -215,7 +216,7 @@ struct RunningProcess {
 };
 
 
-RunningProcess parseProcStat( string line ) 
+RunningProcess parseProcStat( string line )
     throw ( boost::bad_lexical_cast )
 {
     // the first four fields are pid, filename in parens,
@@ -231,9 +232,9 @@ RunningProcess parseProcStat( string line )
 	    line[i++] = '0';
         line[i++] = '0';
     }
-    if ( line[i] != ')' )
+    if ( line[i] == ')' )
         line[i] = '0';
-    
+
     boost::tokenizer<> tokens( line );
     boost::tokenizer<>::iterator t = tokens.begin();
 
@@ -269,6 +270,22 @@ RunningProcess parseProcStat( string line )
     return r;
 }
 
+
+/* ubuntu 10.04 includes boost 1.40, which has boost::filesystem API
+   2. 11.10 includes API 3. rather than demand and upgraded or
+   downgraded boost, I tried to write code that works with both. this
+   wrapper is needed to get a filename from an iterator.
+*/
+
+static string filename( const boost::filesystem::directory_iterator & i )
+{
+#if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 3
+    return i->path().native();
+#else
+    return p.filename();
+#endif
+}
+
 /*! Scans the Process table and the /proc/<pid>/stat files and finds out
     how much memory each of our processes is using (including all children)
     and how badly it is suffering from thrashing.
@@ -284,8 +301,8 @@ void ChoreKeeper::scanProcesses()
 
 	directory_iterator i = directory_iterator( p );
 	while ( i != directory_iterator() ) {
-	    if ( p.filename()[0] <= '9' && is_directory( p ) ) {
-		string x = p.string();
+	    if ( *filename( i ).rbegin() <= '9' && is_directory( p ) ) {
+		string x = filename( i );
 		x.append( "/stat" );
 		ifstream stat( x.data() );
 		string line;
@@ -319,7 +336,7 @@ void ChoreKeeper::scanProcesses()
 	}
 	++i;
     }
-    
+
     list<Process>::iterator m = init.processes();
     while ( m != list<Process>::iterator() ) {
 	m->setCurrentRss( observed[m->pid()].rss );
