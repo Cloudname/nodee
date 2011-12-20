@@ -74,12 +74,11 @@ void Init::check()
 }
 
 
-/*! Returns an iterator pointing to the head of the Process list. The
-    iterator may be used to change the processes, but not to add to or remove
-    from the list.
+/*! Returns a reference to Init's list of managed processes. Callers
+    should not change the list, but may changed the included objects.
 */
 
-std::list<Process>::iterator Init::processes()
+std::list<Process> & Init::processes()
 {
-    return l.begin();
+    return l;
 }

@@ -239,10 +239,14 @@ RunningProcess parseProcStat( string line )
     boost::tokenizer<>::iterator t = tokens.begin();
 
     RunningProcess r;
+    if ( t != boost::tokenizer<>::iterator() )
+	return RunningProcess();
     r.pid = boost::lexical_cast<int>( *t );
     ++t; // points to the nulls from above
     ++t; // points to the state ('D', 'R' or whatever)
     ++t; // points to the ppid
+    if ( t != boost::tokenizer<>::iterator() )
+	return RunningProcess();
     r.ppid = boost::lexical_cast<int>( *t );
     ++t; // points to the process group
     ++t; // points to the session id
@@ -252,8 +256,12 @@ RunningProcess parseProcStat( string line )
     ++t; // points to minflt
     ++t; // points to cminflt
     ++t; // points to majflt
+    if ( t != boost::tokenizer<>::iterator() )
+	return RunningProcess();
     r.majflt = boost::lexical_cast<int>( *t );
     ++t; // points to cmajflt
+    if ( t != boost::tokenizer<>::iterator() )
+	return RunningProcess();
     r.majflt += boost::lexical_cast<int>( *t );
     ++t; // points to user time ticks
     ++t; // points to kernel time ticks
@@ -266,6 +274,8 @@ RunningProcess parseProcStat( string line )
     ++t; // points to the process' start time
     ++t; // points to vsize
     ++t; // points to rss in pages
+    if ( t != boost::tokenizer<>::iterator() )
+	return RunningProcess();
     r.rss = boost::lexical_cast<int>( *t );
     return r;
 }
@@ -322,9 +332,10 @@ void ChoreKeeper::scanProcesses()
 	::exit( EX_SOFTWARE );
     }
 
+    pid_t me = getpid();
+
     map<int,RunningProcess>::iterator i = observed.begin();
     while ( i != observed.end() ) {
-	pid_t me = getpid();
 	pid_t mother = i->second.pid;
 	while ( mother &&
 	        observed[mother].ppid &&
@@ -337,8 +348,9 @@ void ChoreKeeper::scanProcesses()
 	++i;
     }
 
-    list<Process>::iterator m = init.processes();
-    while ( m != list<Process>::iterator() ) {
+    list<Process> & pl = init.processes();
+    list<Process>::iterator m( pl.begin() );
+    while ( m != pl.end() ) {
 	m->setCurrentRss( observed[m->pid()].rss );
 	m->setPageFaults( observed[m->pid()].majflt );
 	++m;
@@ -354,8 +366,9 @@ void ChoreKeeper::scanProcesses()
 Process ChoreKeeper::furthestOverPeak() const
 {
     Process p;
-    list<Process>::iterator m( init.processes() );
-    while ( m != list<Process>::iterator() ) {
+    list<Process> & pl = init.processes();
+    list<Process>::iterator m( pl.begin() );
+    while ( m != pl.end() ) {
 	int over = m->currentRss() - m->expectedPeakMemory();
 	if ( over > 0 &&
 	     ( !p.valid() ||
@@ -375,8 +388,9 @@ Process ChoreKeeper::furthestOverPeak() const
 Process ChoreKeeper::furthestOverExpected() const
 {
     Process p;
-    list<Process>::iterator m( init.processes() );
-    while ( m != list<Process>::iterator() ) {
+    list<Process> & pl = init.processes();
+    list<Process>::iterator m( pl.begin() );
+    while ( m != pl.end() ) {
 	int over = m->currentRss() - m->expectedTypicalMemory();
 	if ( over > 0 &&
 	     ( !p.valid() ||
@@ -398,8 +412,9 @@ Process ChoreKeeper::leastValuable() const
 {
     Process max;
     Process min;
-    list<Process>::iterator m( init.processes() );
-    while ( m != list<Process>::iterator() ) {
+    list<Process> & pl = init.processes();
+    list<Process>::iterator m( pl.begin() );
+    while ( m != pl.end() ) {
 	if ( !max.valid() || max.value() < m->value() )
 	    max = *m;
 	if ( !min.valid() || min.value() > m->value() )
@@ -420,8 +435,9 @@ Process ChoreKeeper::leastValuable() const
 Process ChoreKeeper::thrashingMost() const
 {
     Process p;
-    list<Process>::iterator m( init.processes() );
-    while ( m != list<Process>::iterator() ) {
+    list<Process> & pl = init.processes();
+    list<Process>::iterator m( pl.begin() );
+    while ( m != pl.end() ) {
 	if ( m->recentPageFaults() > p.recentPageFaults() )
 	    p = *m;
 	++m;
@@ -439,8 +455,9 @@ Process ChoreKeeper::thrashingMost() const
 Process ChoreKeeper::biggest() const
 {
     Process p;
-    list<Process>::iterator m( init.processes() );
-    while ( m != list<Process>::iterator() ) {
+    list<Process> & pl = init.processes();
+    list<Process>::iterator m( pl.begin() );
+    while ( m != pl.end() ) {
 	if ( !p.valid() || m->currentRss() > p.currentRss() )
 	    p = *m;
 	++m;

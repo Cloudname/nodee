@@ -18,7 +18,7 @@ public:
     void start();
     void check();
 
-    std::list<Process>::iterator processes();
+    std::list<Process>& processes();
 
 private:
     std::list<Process> l;
