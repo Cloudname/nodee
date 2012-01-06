@@ -8,7 +8,7 @@ dropprivileges: dropprivileges.c
 	clang -o dropprivileges $(CFLAGS) dropprivileges.c
 
 OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
-	nodee.o process.o serverspec.o
+	process.o serverspec.o
 
 .cpp.o:
 	g++ -g -c -o $@ -O0 $<
@@ -21,8 +21,11 @@ ifeq ($(shell ./platform.sh), lucid)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options
 endif
 
-nodee: ${OBJECTS}
+nodee: ${OBJECTS} nodee.o Makefile
 	g++ -g -o nodee -pthread ${OBJECTS} ${BOOSTLIBS}
 
 clean:
-	rm nodee dropprivileges *.o
+	-rm nodee nodeetest dropprivileges *.o
+
+nodeetest: ${OBJECTS} test.o Makefile
+	g++ -g -o nodeetest -pthread ${OBJECTS} test.o ${BOOSTLIBS}

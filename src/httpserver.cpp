@@ -14,9 +14,9 @@
 
 /*! \class HttpServer httpserver.h
 
-  The HttpServer class provdes a HTTP server for Nodee's RESTful
-  API. It expects to run in a thread of its own; the start() function
-  does all the work, then exits.
+  The HttpServer class provdes a HTTP server for Nodee's API. It
+  expects to run in a thread of its own; the start() function does all
+  the work, then exits.
 
   I couldn't find embeddable HTTP server source I liked (technically
   plus BSD), so on the advice of James Antill, I applied some
@@ -55,8 +55,7 @@ HttpServer::HttpServer( int fd )
 void HttpServer::start()
 {
     while ( true ) {
-	readRequest();
-	parseRequest();
+	parseRequest( readRequest() );
 	if ( f >= 0 && cl > 0 )
 	    readBody();
 
@@ -68,8 +67,65 @@ void HttpServer::start()
 }
 
 
-/*! Reads and parses a single request; sets various member functions
- *  accordingly.
+/*! Reads and returns a single request. Throws nothing.
+  
+    Aborts after 32k; the common requests will be <500 bytes and
+    practically all <2k, so 32k is a good sanity limit.
+
+    
+*/
+
+string HttpServer::readRequest()
+{
+    // first, we read the header, one byte at a time. this is
+    // generally considered inefficient, but if we're going to spin up
+    // a JVM as a result of this request, who cares about a few hundred
+    // system calls more or less?
+    string s;
+
+    bool done = false;
+    int i = 0;
+    while ( i < 32768 && !done ) {
+	char x[2];
+	int r = ::read( f, &x, 1 );
+	if ( r < 0 ) {
+	    // an error. we don't care.
+	    close();
+	    return string();
+	}
+
+	if ( r > 0 && x == 0 ) {
+	    // some fun-loving client sent us a null byte. we have no
+	    // patience with such games.
+	    close();
+	    return string();
+	}
+
+	x[1] = 0;
+	s += x;
+	i++;
+
+	// there are two ways to end a header: LFLF and CRLFCRLF
+	if ( i >= 2 && s[i-1] == 10 && s[i-2] == 10 )
+	    done = true;
+	if ( i >= 3 && s[i-1] == 10 && s[i-2] == 13 && s[i-3] == 10 )
+	    done = true; // LFCRLF. arguably even that's allowed.
+
+	if ( i >= 32768 && !done ) {
+	    // the sender sent 32k and didn't actually send a valid header.
+	    // is the client buggy, blackhat or just criminally talkative?
+	    close();
+	    return string();
+	}
+    }
+
+    return s;
+}
+
+
+
+/*! Parses \a h as a HTTP request. May set operation() to Invalid, but
+    does nothing else to signal errors.
 
     The parser is quite amazingly strict when it does parse, but
     mostly it doesn't. The client can tell us what Content-Type it
@@ -79,63 +135,13 @@ void HttpServer::start()
     Content-Length, which is necessary for POST.
 */
 
-void HttpServer::readRequest()
+void HttpServer::parseRequest( string h )
 {
     o = Invalid;
     cl = 0;
     p.erase();
     b.erase();
-    h.erase();
 
-    // first, we read the header, one byte at a time. this is
-    // generally considered inefficient, but if we're going to spin up
-    // a JVM as a result of this request, who cares about a few hundred
-    // system calls more or less?
-    bool done = false;
-    int i = 0;
-    while ( i < 32768 && !done ) {
-	char x[2];
-	int r = ::read( f, &x, 1 );
-	if ( r < 0 ) {
-	    // an error. we don't care.
-	    close();
-	    return;
-	}
-
-	if ( r > 0 && x == 0 ) {
-	    // some fun-loving client sent us a null byte. we have no
-	    // patience with such games.
-	    close();
-	    return;
-	}
-
-	x[1] = 0;
-	h += x;
-	i++;
-
-	// there are two ways to end a header: LFLF and CRLFCRLF
-	if ( i >= 2 && h[i-1] == 10 && h[i-2] == 10 )
-	    done = true;
-	if ( i >= 3 && h[i-1] == 10 && h[i-2] == 13 && h[i-3] == 10 )
-	    done = true; // LFCRLF. arguably even that's allowed.
-
-	if ( i >= 32768 && !done ) {
-	    // the sender sent 32k and didn't actually send a valid header.
-	    // is the client buggy, blackhat or just criminally talkative?
-	    close();
-	    return;
-	}
-    }
-}
-
-
-
-/*! Parses the request supplied by readRequest(). May set operation()
-    to Invalid, but does nothing else to signal errors.
-*/
-
-void HttpServer::parseRequest()
-{
     if ( !h.compare( 0, 4, "GET " ) ) {
 	o = Get;
     } else if ( !h.compare( 0, 5, "POST " ) ) {
@@ -239,7 +245,7 @@ void HttpServer::respond()
     }
 
     // it's Get
-    
+
 }
 
 
@@ -254,7 +260,7 @@ void HttpServer::close()
 
 /*! Returns a HTTP response string with \a numeric status, \a textual
     explanation and \a contentType.
- 
+
     This function does most of what send() ought to do, but this is
     easily testable and the same logic isend() would not be.
 */

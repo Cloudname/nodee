@@ -14,19 +14,20 @@ public:
     enum Operation { Get, Post, Invalid };
 
     HttpServer( int );
+    ~HttpServer() {}
 
     void operator()() { start(); }
 
     void start();
 
-    void readRequest();
-    void parseRequest();
+    string readRequest();
+    void parseRequest( string );
     void readBody();
 
     string body() const;
-    int contentLength() const;
-    Operation operation() const;
-    string path() const;
+    int contentLength() const { return cl; }
+    Operation operation() const { return o; }
+    string path() const { return p; }
 
     void respond();
     void send( string );
@@ -37,7 +38,6 @@ public:
 
 private:
     string p;
-    string h;
     string b;
     Operation o;
     int cl;
