@@ -207,16 +207,7 @@ void ChoreKeeper::readProcVmstat( const char * fileName,
     }
 }
 
-struct RunningProcess {
-    RunningProcess(): pid( 0 ), ppid( 0 ), rss( 0 ), majflt( 0 ) {}
-    int pid;
-    int ppid;
-    int rss;
-    int majflt;
-};
-
-
-RunningProcess parseProcStat( string line )
+RunningProcess ChoreKeeper::parseProcStat( string line )
     throw ( boost::bad_lexical_cast )
 {
     // the first four fields are pid, filename in parens,
@@ -238,16 +229,16 @@ RunningProcess parseProcStat( string line )
     boost::tokenizer<> tokens( line );
     boost::tokenizer<>::iterator t = tokens.begin();
     boost::tokenizer<>::iterator end = tokens.end();
-    
+
 
     RunningProcess r;
-    if ( t != end )
+    if ( t == end )
 	return RunningProcess();
     r.pid = boost::lexical_cast<int>( *t );
     ++t; // points to the nulls from above
     ++t; // points to the state ('D', 'R' or whatever)
     ++t; // points to the ppid
-    if ( t != end )
+    if ( t == end )
 	return RunningProcess();
     r.ppid = boost::lexical_cast<int>( *t );
     ++t; // points to the process group
@@ -258,11 +249,11 @@ RunningProcess parseProcStat( string line )
     ++t; // points to minflt
     ++t; // points to cminflt
     ++t; // points to majflt
-    if ( t != end )
+    if ( t == end )
 	return RunningProcess();
     r.majflt = boost::lexical_cast<int>( *t );
     ++t; // points to cmajflt
-    if ( t != end )
+    if ( t == end )
 	return RunningProcess();
     r.majflt += boost::lexical_cast<int>( *t );
     ++t; // points to user time ticks
@@ -276,7 +267,7 @@ RunningProcess parseProcStat( string line )
     ++t; // points to the process' start time
     ++t; // points to vsize
     ++t; // points to rss in pages
-    if ( t != end )
+    if ( t == end )
 	return RunningProcess();
     r.rss = boost::lexical_cast<int>( *t );
     return r;

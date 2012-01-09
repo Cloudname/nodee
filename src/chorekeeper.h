@@ -6,6 +6,16 @@
 #include "process.h"
 #include "init.h"
 
+#include <boost/lexical_cast.hpp>
+
+
+struct RunningProcess {
+    RunningProcess(): pid( 0 ), ppid( 0 ), rss( 0 ), majflt( 0 ) {}
+    int pid;
+    int ppid;
+    int rss;
+    int majflt;
+};
 
 
 class ChoreKeeper
@@ -29,10 +39,16 @@ public:
     Process biggest() const;
 
     void readProcVmstat( const char *, int &, int &, int & );
+    
+    RunningProcess parseProcStat( string line )
+	throw ( boost::bad_lexical_cast );
 
 private:
     bool thrashing[8];
     Init & init;
 };
+
+
+
 
 #endif
