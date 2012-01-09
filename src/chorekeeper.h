@@ -28,10 +28,8 @@ public:
     Process thrashingMost() const;
     Process biggest() const;
 
-
-private:
     void readProcVmstat( const char *, int &, int &, int & );
-	
+
 private:
     bool thrashing[8];
     Init & init;
