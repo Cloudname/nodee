@@ -242,4 +242,9 @@ BOOST_AUTO_TEST_CASE( ScanProcesses )
     // and 200, with majflt 4576+0+69+0+42+0 and rss 3883+4231235+476238.
     
     BOOST_CHECK( x.biggest() == mg2 );
+    BOOST_CHECK( x.thrashingMost() == mg2 );
+    BOOST_CHECK( !x.leastValuable().valid() );
+    // peak and expected are both zero, so...
+    BOOST_CHECK( x.furthestOverPeak() == mg2 );
+    BOOST_CHECK( x.furthestOverExpected() == mg2 );
 }
