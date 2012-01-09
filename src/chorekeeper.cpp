@@ -52,7 +52,7 @@ void ChoreKeeper::start()
 {
     while( true ) {
 	::sleep( 1 );
-	scanProcesses();
+	scanProcesses( "/proc", getpid() );
 	detectThrashing();
 	if ( isThrashing() ) {
 	    Process jesus;
@@ -292,13 +292,17 @@ static string filename( const boost::filesystem::directory_iterator & i )
 /*! Scans the Process table and the /proc/<pid>/stat files and finds out
     how much memory each of our processes is using (including all children)
     and how badly it is suffering from thrashing.
+
+    \a proc is /proc (or another value for testing) and \a me is
+    nodee's pid (or another value for testing). I dislike this,
+    can't tell why.
 */
 
-void ChoreKeeper::scanProcesses()
+void ChoreKeeper::scanProcesses( const char * proc, int me )
 {
     using namespace boost::filesystem;
 
-    path p ( "/proc");
+    path p ( proc );
     map<int,RunningProcess> observed;
     try {
 
@@ -324,8 +328,6 @@ void ChoreKeeper::scanProcesses()
 	// kill all processes or just fail?
 	::exit( EX_SOFTWARE );
     }
-
-    pid_t me = getpid();
 
     map<int,RunningProcess>::iterator i = observed.begin();
     while ( i != observed.end() ) {

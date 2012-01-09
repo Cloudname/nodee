@@ -30,7 +30,7 @@ public:
     bool isThrashing() const;
     static bool oneBitOfThrashing( int, int, int );
 
-    void scanProcesses();
+    void scanProcesses( const char *, int );
 
     Process furthestOverPeak() const;
     Process furthestOverExpected() const;

@@ -23,7 +23,9 @@
 */
 
 Process::Process()
-    : p( 0 )
+    : p( 0 ),
+      faults( 0 ), prevFaults( 0 ),
+      rss( 0 )
 {
 }
 
@@ -90,8 +92,21 @@ void Process::launch( const ServerSpec & what )
 /*! Constructs a copy of \a other. Deep copy, no sharing. */
 
 Process::Process( const Process & other )
-    : p( other.p ), s( other.s )
+    : p( other.p ), s( other.s ),
+      faults( other.faults ),
+      prevFaults( other.prevFaults ),
+      rss( other.rss )
 {
+}
+
+
+void Process::operator=( const Process & other )
+{
+    p = other.p;
+    s = other.s;
+    faults = other.faults;
+    prevFaults = other.prevFaults;
+    rss = other.rss;
 }
 
 
@@ -125,4 +140,14 @@ void Process::setPageFaults( int x )
 int Process::recentPageFaults() const
 {
     return faults - prevFaults;
+}
+
+
+/*! Sets the object's state to look as though it has forked and the
+    child's pid is \a fakepid. Used only for testing.
+*/
+
+void Process::fakefork( int fakepid )
+{
+    p = fakepid;
 }

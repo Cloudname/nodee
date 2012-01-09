@@ -20,6 +20,8 @@ public:
     virtual void start();
     virtual void handleExit( int, int );
 
+    void fakefork( int fakepid );
+
     int value() const { return s.value(); }
     int expectedPeakMemory() const { return s.expectedPeakMemory(); }
     int expectedTypicalMemory() const { return s.expectedTypicalMemory(); }
@@ -30,6 +32,7 @@ public:
     int recentPageFaults() const;
 
     bool operator==( const Process & other ) { return p == other.p; }
+    void operator=( const Process & other );
 
     static void launch( const ServerSpec & what );
 

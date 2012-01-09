@@ -20,6 +20,8 @@ public:
 
     std::list<Process>& processes();
 
+    void manage( Process p );
+
 private:
     std::list<Process> l;
 };
