@@ -1,17 +1,18 @@
 # Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
+COMPILER=clang
 CFLAGS=-O3 -W -Wall -Werror
 
 all: dropprivileges nodee nodeetest
 
 dropprivileges: dropprivileges.c
-	clang -o dropprivileges $(CFLAGS) dropprivileges.c
+	${COMPILER} -o dropprivileges $(CFLAGS) dropprivileges.c
 
 OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
-	process.o serverspec.o
+	process.o serverspec.o service.o
 
-.cpp.o:
-	g++ -g -c -o $@ -O0 $<
+.cpp.o: Makefile
+	${COMPILER} -g -c -o $@ -O0 $<
 
 ifeq ($(shell ./platform.sh), oneiric)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_system \
@@ -22,10 +23,10 @@ BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options
 endif
 
 nodee: ${OBJECTS} nodee.o Makefile
-	g++ -g -o nodee -pthread ${OBJECTS} nodee.o ${BOOSTLIBS}
+	${COMPILER} -g -o nodee -pthread ${OBJECTS} nodee.o ${BOOSTLIBS}
 
 clean:
 	-rm nodee nodeetest dropprivileges *.o
 
 nodeetest: ${OBJECTS} test.o Makefile
-	g++ -g -o nodeetest -pthread ${OBJECTS} test.o ${BOOSTLIBS}
+	${COMPILER} -g -o nodeetest -pthread ${OBJECTS} test.o ${BOOSTLIBS}

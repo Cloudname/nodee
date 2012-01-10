@@ -3,6 +3,7 @@
 #include "httpserver.h"
 
 #include "serverspec.h"
+#include "service.h"
 #include "process.h"
 
 #include <stdio.h>
@@ -10,8 +11,6 @@
 #include <algorithm>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp> // write_json. feh.
 
 
 /*! \class HttpServer httpserver.h
@@ -286,21 +285,9 @@ void HttpServer::respond()
     // it's Get
 
     if ( p == "/service/list" ) {
-	list<Process> & pl = init.processes();
-	list<Process>::iterator m( pl.begin() );
-
-	using boost::property_tree::ptree;
-	ptree pt;
-
-	while ( m != pl.end() ) {
-	    pt.put( "services.x.value", m->value() );
-	    ++m;
-	}
 	string o( httpResponse( 200, "application/json",
 				"Service list follows" ) );
-	ostringstream os;
-	write_json( os, pt );
-	o.append( os.str() );
+	o.append( Service::list( init ) );
 	send( o );
     }
 

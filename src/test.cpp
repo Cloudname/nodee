@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE( ScanProcesses )
     boost::filesystem::create_directory( "/tmp/uglehack/200" );
     boost::filesystem::create_directory( "/tmp/uglehack/201" );
     boost::filesystem::create_directory( "/tmp/uglehack/202" );
-    
+
     ofstream f1( "/tmp/uglehack/1/stat" );
     f1 << "1 (init) S 0 0 0 0 0 0 0 0 27 5186 0 0 0 0 0 0 0 0 0 0 603 0" << endl;
     ofstream f42( "/tmp/uglehack/42/stat" );
@@ -242,11 +242,29 @@ BOOST_AUTO_TEST_CASE( ScanProcesses )
 
     // should have observed 100, with majflt 1000+0+1+0 and rss 1532+1432,
     // and 200, with majflt 4576+0+69+0+42+0 and rss 3883+4231235+476238.
-    
+
     BOOST_CHECK( x.biggest() == mg2 );
     BOOST_CHECK( x.thrashingMost() == mg2 );
     BOOST_CHECK( !x.leastValuable().valid() );
     // peak and expected are both zero, so...
     BOOST_CHECK( x.furthestOverPeak() == mg2 );
     BOOST_CHECK( x.furthestOverExpected() == mg2 );
+}
+
+
+#include "service.h"
+
+
+BOOST_AUTO_TEST_CASE( ServiceList )
+{
+    Init i;
+
+    Process p1;
+    p1.fakefork( 100 );
+    p1.setCurrentRss( 100 );
+    p1.setPageFaults( 29 );
+
+    i.manage( p1 );
+
+    BOOST_CHECK_EQUAL( Service::list( i ), "{\"services\":{\"100\":{\"value\":\"0\",\"rss\":\"100\",\"recentfaults\":\"29\"}}}\n" );
 }
