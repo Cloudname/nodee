@@ -292,7 +292,35 @@ void HttpServer::respond()
     }
 
     if ( p == "/artifact/list" ) {
+	string o( httpResponse( 200, "application/json",
+				"Artifact list follows" ) );
+	o.append( Service::list( init ) );
+	send( o );
     }
+
+    if ( p == "/" ) {
+	string r = httpResponse( 200, "text/html",
+				 "This is not a web site" );
+	r += "<html>"
+	     "<head><title>Nodee</title><head>"
+	     "<body style='text-align: center;'>"
+	     "<h1>Nodee</h1>"
+	     "<p>This is the home page of a nodee server. "
+	     "There are no web pages to see here, only a few JSON "
+	     "API things, and those aren't really something you'll "
+	     "want to look at, if you understand."
+	     "<p>Have a look at the "
+	     "<a href=\"http://cloudname.org\">Cloudname</a> "
+	     "home page or perhaps the "
+	     "<a href=\"https://github.com/Cloudname/nodee\">Nodee source</a> "
+	     "instead, that'll be much more fun."
+	     "<p><img src=\"http://rant.gulbrandsen.priv.no/images/under-construction.gif\">"
+	     "</body>"
+	     "</html>\n";
+	send( r );
+    }
+    
+    send( httpResponse( 404, "text/plain", "No such page" ) );
 }
 
 
