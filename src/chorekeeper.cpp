@@ -184,27 +184,28 @@ void ChoreKeeper::readProcVmstat( const char * fileName,
 	string line;
 	getline( vmstat, line );
 	if ( !line.empty() ) {
-	boost::tokenizer<boost::char_separator<char> > t( line, space );
-	boost::tokenizer<boost::char_separator<char> >::iterator i = t.begin();
-	string n = *i;
-	++i;
-	int v = boost::lexical_cast<int>( *i );
+	    boost::tokenizer<boost::char_separator<char> > t( line, space );
+	    boost::tokenizer<boost::char_separator<char> >::iterator i 
+		= t.begin();
+	    string n = *i;
+	    ++i;
+	    int v = boost::lexical_cast<int>( *i );
 
-	// nr_free_pages is the number of RAM pages that are
-	// completely unused.
-	if ( n == "nr_free_pages" )
-	    nr_free_pages = v;
-	// pgmajfault is the number of times a process has had to wait
-	// for a page to be read from either swap or the executable
-	if ( n == "pgmajfault" )
-	    pgmajfault = v;
-	// pgpgout is the number of things that have been written to
-	// disk, including swap but also including everything else
-	if ( n == "pgpgout" )
-	    pgpgout = v;
+	    // nr_free_pages is the number of RAM pages that are
+	    // completely unused.
+	    if ( n == "nr_free_pages" )
+		nr_free_pages = v;
+	    // pgmajfault is the number of times a process has had to wait
+	    // for a page to be read from either swap or the executable
+	    if ( n == "pgmajfault" )
+		pgmajfault = v;
+	    // pgpgout is the number of things that have been written to
+	    // disk, including swap but also including everything else
+	    if ( n == "pgpgout" )
+		pgpgout = v;
 
-	// I use pgmajfault for input since that's about waiting, and
-	// waiting is the most important effect of thrashing
+	    // I use pgmajfault for input since that's about waiting, and
+	    // waiting is the most important effect of thrashing
         }
     }
 }
