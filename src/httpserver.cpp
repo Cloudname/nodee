@@ -320,6 +320,22 @@ void HttpServer::respond()
 	send( r );
     }
     
+    if ( p == "/robots.txt" ) {
+	string r = httpResponse( 200, "text/plain",
+				 "This is not a web site" );
+	r += "User-Agent: *\r\nDisallow: /\r\n";
+	send( r );
+    }
+    
+    if ( p == "/sitemap.xml" ) {
+	string r = httpResponse( 200, "application/xml",
+				 "This is not a web site" );
+	r += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	     "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n"
+	     "</urlset nicetry=true>\n";
+	send( r );
+    }
+    
     send( httpResponse( 404, "text/plain", "No such page" ) );
 }
 
