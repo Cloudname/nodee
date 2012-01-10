@@ -3,13 +3,15 @@
 #ifndef HTTPLISTENER_H
 #define HTTPLISTENER_H
 
+#include "init.h"
+
 
 class HttpListener
 {
 public:
     enum Family { V4, V6 };
 
-    HttpListener( enum Family, int port );
+    HttpListener( enum Family, int port, Init & );
 
     void operator()() { start(); } // what boost::thread wants
 
@@ -19,6 +21,7 @@ public:
 
 public:
     volatile int f;
+    Init & init;
 };
 
 #endif

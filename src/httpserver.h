@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "init.h"
+
 using namespace std;
 
 
@@ -13,7 +15,7 @@ class HttpServer
 public:
     enum Operation { Get, Post, Invalid };
 
-    HttpServer( int );
+    HttpServer( int, Init & );
     ~HttpServer() {}
 
     void operator()() { start(); }
@@ -37,6 +39,7 @@ public:
     void close();
 
 private:
+    Init & init;
     string p;
     string b;
     Operation o;

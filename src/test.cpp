@@ -13,7 +13,8 @@ using namespace std;
 
 BOOST_AUTO_TEST_CASE( HttpParsing )
 {
-    HttpServer x( 0 );
+    Init i;
+    HttpServer x( 0, i );
 
     x.parseRequest( "GET / HTTP/1.42\n\n" );
     BOOST_CHECK_EQUAL( x.operation(), HttpServer::Get );
@@ -31,7 +32,8 @@ BOOST_AUTO_TEST_CASE( HttpParsing )
 
 BOOST_AUTO_TEST_CASE( HttpResponse )
 {
-    HttpServer x( 0 );
+    Init i;
+    HttpServer x( 0, i );
 
     BOOST_CHECK_EQUAL( x.httpResponse( 100, "text/plain", "foo" ),
 		       "100 foo\r\n"

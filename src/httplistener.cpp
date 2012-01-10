@@ -22,10 +22,12 @@
 */
 
 
-/*! Constructs an HTTP listener for \a port using \a family (V4 or V6).
+/*! Constructs an HTTP listener for \a port using \a family (V4 or V6),
+    creating HttpServers connected to \a i when clients connect.
 */
 
-HttpListener::HttpListener( Family family, int port )
+HttpListener::HttpListener( Family family, int port, Init & i )
+    : init( i )
 {
     int retcode;
 
@@ -73,7 +75,7 @@ HttpListener::HttpListener( Family family, int port )
 
     boost::thread( *this );
     // this lets the thread run unmanaged; when run() exits the object
-    // will be deallocated and
+    // will be deallocated.
 }
 
 
@@ -90,7 +92,7 @@ void HttpListener::start()
     while( f >= 0 ) {
 	int i = ::accept( f, 0, 0 );
 	if ( i >= 0 )
-	    boost::thread( HttpServer( i ) );
+	    boost::thread( HttpServer( i, init ) );
 	else if ( errno != EAGAIN )
 	    f = -1;
     }

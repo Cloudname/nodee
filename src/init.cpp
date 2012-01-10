@@ -92,3 +92,18 @@ void Init::manage( Process p )
 {
     l.push_back( p );
 }
+
+
+/*! Returns a copy of the Process object for \a p, or an invalid
+    Process object if \a p is not the pid of a managed service.
+*/
+
+Process Init::find( int pid ) const
+{
+    std::list<Process>::const_iterator i = l.begin();
+    while ( i != l.end() && i->pid() != pid )
+	++i;
+    if ( i == l.end() )
+	return Process();
+    return *i;
+}

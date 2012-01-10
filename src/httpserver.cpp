@@ -10,6 +10,8 @@
 #include <algorithm>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp> // write_json. feh.
 
 
 /*! \class HttpServer httpserver.h
@@ -37,11 +39,11 @@
 */
 
 
-/*! Constructs a new HttpServer for \a fd.
+/*! Constructs a new HttpServer for \a fd, working on \a i.
 */
 
-HttpServer::HttpServer( int fd )
-    : o( Invalid ), cl( 0 ), f ( fd )
+HttpServer::HttpServer( int fd, Init & i )
+    : init( i ), o( Invalid ), cl( 0 ), f ( fd )
 {
     // nothing needed (yet?)
 }
@@ -68,11 +70,11 @@ void HttpServer::start()
 
 
 /*! Reads and returns a single request. Throws nothing.
-  
+
     Aborts after 32k; the common requests will be <500 bytes and
     practically all <2k, so 32k is a good sanity limit.
 
-    
+
 */
 
 string HttpServer::readRequest()
@@ -219,11 +221,13 @@ void HttpServer::respond()
 {
     if ( o == Invalid ) {
 	send( httpResponse( 400, "text/plain", "Utterly total parse error" ) );
-	close();
 	return;
     }
+    
+    // start, stop, list services
+    // install, uninstall, list artifacts
 
-    if ( o == Post && p == "/process/launch" ) {
+    if ( o == Post && p == "/service/start" ) {
 	ServerSpec s = ServerSpec::parseJson( b );
 	if ( !s.valid() ) {
 	    send( httpResponse( 400, "text/plain",
@@ -233,19 +237,75 @@ void HttpServer::respond()
 	    send( httpResponse( 200, "text/plain",
 				"Will launch, or try to" ) );
 	}
-	close();
+	return;
+    }
+
+    if ( o == Post && p.substr( 0, 14 ) == "/service/stop/" ) {
+	Process s;
+	try {
+	    s = init.find( boost::lexical_cast<int>( p.substr( 14 ) ) );
+	} catch ( boost::bad_lexical_cast ) {
+	}
+	if ( !s.valid() ) {
+	    send( httpResponse( 400, "text/plain",
+				"No such service" ) );
+	} else {
+	    // hmm?
+	    close();
+	}
+	return;
+    }
+
+    if ( o == Post && p.substr( 18 ) == "/artifact/install/" ) {
+	ServerSpec s = ServerSpec::parseJson( b );
+	if ( !s.valid() ) {
+	    send( httpResponse( 400, "text/plain",
+				"Parse error for the JSON body" ) );
+	} else {
+	    Process::launch( s );
+	    send( httpResponse( 200, "text/plain",
+				"Will launch, or try to" ) );
+	}
+	return;
+    }
+
+    if ( o == Post && p.substr( 0, 20 ) == "/artifact/uninstall/" ) {
+	string artifact = p.substr( 21 );
+	// ARNT
+	send( httpResponse( 200, "text/plain",
+				"Will uninstall, or try to" ) );
 	return;
     }
 
     if ( o == Post ) {
 	send( httpResponse( 404, "text/plain",
 			    "No such response" ) );
-	close();
 	return;
     }
 
     // it's Get
 
+    if ( p == "/service/list" ) {
+	list<Process> & pl = init.processes();
+	list<Process>::iterator m( pl.begin() );
+
+	using boost::property_tree::ptree;
+	ptree pt;
+
+	while ( m != pl.end() ) {
+	    pt.put( "services.x.value", m->value() );
+	    ++m;
+	}
+	string o( httpResponse( 200, "application/json",
+				"Service list follows" ) );
+	ostringstream os;
+	write_json( os, pt );
+	o.append( os.str() );
+	send( o );
+    }
+
+    if ( p == "/artifact/list" ) {
+    }
 }
 
 
@@ -289,7 +349,15 @@ string HttpServer::httpResponse( int numeric, const string & contentType,
 
 void HttpServer::send( string response )
 {
-    int r = ::write( f, response.data(), response.length() );
-    if ( r < response.length() )
-	close();
+    int o = 0;
+    int l = response.length();
+    while ( o < l ) {
+	int r = ::write( f, o + response.data(), l - o );
+	if ( r <= 0 ) {
+	    close();
+	    return;
+	}
+	o += r;
+    }
+    close();
 }

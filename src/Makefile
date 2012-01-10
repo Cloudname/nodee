@@ -2,7 +2,7 @@
 
 CFLAGS=-O3 -W -Wall -Werror
 
-all: dropprivileges nodee
+all: dropprivileges nodee nodeetest
 
 dropprivileges: dropprivileges.c
 	clang -o dropprivileges $(CFLAGS) dropprivileges.c
@@ -22,7 +22,7 @@ BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options
 endif
 
 nodee: ${OBJECTS} nodee.o Makefile
-	g++ -g -o nodee -pthread ${OBJECTS} ${BOOSTLIBS}
+	g++ -g -o nodee -pthread ${OBJECTS} nodee.o ${BOOSTLIBS}
 
 clean:
 	-rm nodee nodeetest dropprivileges *.o
