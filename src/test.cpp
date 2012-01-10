@@ -186,6 +186,69 @@ BOOST_AUTO_TEST_CASE( ParseProcStat )
     BOOST_CHECK_EQUAL( r.majflt, 0 );
 }
 
+
+static void makeFakeProc()
+{
+    boost::filesystem::create_directory( "/tmp/uglehack" );
+    boost::filesystem::create_directory( "/tmp/uglehack/1" );
+    boost::filesystem::create_directory( "/tmp/uglehack/42" );
+    boost::filesystem::create_directory( "/tmp/uglehack/69" );
+    boost::filesystem::create_directory( "/tmp/uglehack/100" );
+    boost::filesystem::create_directory( "/tmp/uglehack/101" );
+    boost::filesystem::create_directory( "/tmp/uglehack/200" );
+    boost::filesystem::create_directory( "/tmp/uglehack/201" );
+    boost::filesystem::create_directory( "/tmp/uglehack/202" );
+
+    ofstream f1( "/tmp/uglehack/1/stat" );
+    f1 << "1 (init) S 0 0 0 0 0 0 0 0 27 5186 0 0 0 0 0 0 0 0 0 0 603 0" << endl;
+    ofstream f1b( "/tmp/uglehack/1/status" );
+    f1b << "Name: init" << endl
+	<< "Uid:	0	0	0	0" << endl
+	<< "Gid:	0	0	0	0" << endl;
+    ofstream f42( "/tmp/uglehack/42/stat" );
+    f42 << "42 (nodee) S 0 0 0 0 0 0 0 0 30 30 0 0 0 0 0 0 0 0 0 0 1000 0" << endl;
+    ofstream f42b( "/tmp/uglehack/42/status" );
+    f42b << "Name: nodee" << endl
+	 << "Uid:	0	0	0	0" << endl
+	 << "Gid:	0	0	0	0" << endl;
+    ofstream f69( "/tmp/uglehack/69/stat" );
+    f69 << "69 (sshd) S 0 0 0 0 0 0 0 0 40 1 0   0 0 0 0 0 0 0 0 100 0" << endl;
+    ofstream f69b( "/tmp/uglehack/69/status" );
+    f69b << "Name: sshd" << endl
+	 << "Uid:	0	0	0	0" << endl
+	 << "Gid:	0	0	0	0" << endl;
+    ofstream f100( "/tmp/uglehack/100/stat" );
+    f100 << "100 (mg1) S 0 0 0 0 0 0 0 0 1000 0 0 0 0 0 0 0 0 0 0 0 1532 0" << endl;
+    ofstream f100b( "/tmp/uglehack/100/status" );
+    f100b << "Name: mg1" << endl
+	  << "Uid:	2000	2000	2000	2000" << endl
+	  << "Gid:	2000	2000	2000	2000" << endl;
+    ofstream f101( "/tmp/uglehack/101/stat" );
+    f101 << "101 (mg1c) S 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1432 0" << endl;
+    ofstream f101b( "/tmp/uglehack/101/status" );
+    f101b << "Name: mg1c" << endl
+	  << "Uid:	2000	2000	2000	2000" << endl
+	  << "Gid:	2000	2000	2000	2000" << endl;
+    ofstream f200( "/tmp/uglehack/200/stat" );
+    f200 << "200 (mg2) S 0 0 0 0 0 0 0 0 4576 0 0 0 0 0 0 0 0 0 0 0 3883 0" << endl;
+    ofstream f200b( "/tmp/uglehack/200/status" );
+    f200b << "Name: mg2" << endl
+	  << "Uid:	2001	2001	2001	2001" << endl
+	  << "Gid:	2002	2002	2002	2002" << endl;
+    ofstream f201( "/tmp/uglehack/201/stat" );
+    f201 << "201 (mg2c) S 0 0 0 0 0 0 0 0 69 0 0 0 0 0 0 0 0 0 0 0 4231235 0" << endl;
+    ofstream f201b( "/tmp/uglehack/201/status" );
+    f201b << "Name: mg2c" << endl
+	  << "Uid:	2001	2001	2001	2001" << endl
+	  << "Gid:	2002	2002	2002	2002" << endl;
+    ofstream f202( "/tmp/uglehack/202/stat" );
+    f202 << "202 (mg2cc) S 0 0 0 0 0 0 0 0 42 0 0 0 0 0 0 0 0 0 0 0 476238 0" << endl;
+    ofstream f202b( "/tmp/uglehack/202/status" );
+    f202b << "Name: mg2cc" << endl
+	  << "Uid:	2001	2001	2001	2001" << endl
+	  << "Gid:	2002	2002	2002	2002" << endl;
+}
+
 BOOST_AUTO_TEST_CASE( ScanProcesses )
 {
     Init i;
@@ -210,33 +273,8 @@ BOOST_AUTO_TEST_CASE( ScanProcesses )
     Process mg2;
     mg2.fakefork( 200 );
     i.manage( mg2 );
-
-    boost::filesystem::create_directory( "/tmp/uglehack" );
-    boost::filesystem::create_directory( "/tmp/uglehack/1" );
-    boost::filesystem::create_directory( "/tmp/uglehack/42" );
-    boost::filesystem::create_directory( "/tmp/uglehack/69" );
-    boost::filesystem::create_directory( "/tmp/uglehack/100" );
-    boost::filesystem::create_directory( "/tmp/uglehack/101" );
-    boost::filesystem::create_directory( "/tmp/uglehack/200" );
-    boost::filesystem::create_directory( "/tmp/uglehack/201" );
-    boost::filesystem::create_directory( "/tmp/uglehack/202" );
-
-    ofstream f1( "/tmp/uglehack/1/stat" );
-    f1 << "1 (init) S 0 0 0 0 0 0 0 0 27 5186 0 0 0 0 0 0 0 0 0 0 603 0" << endl;
-    ofstream f42( "/tmp/uglehack/42/stat" );
-    f42 << "42 (nodee) S 0 0 0 0 0 0 0 0 30 30 0 0 0 0 0 0 0 0 0 0 1000 0" << endl;
-    ofstream f69( "/tmp/uglehack/69/stat" );
-    f69 << "69 (sshd) S 0 0 0 0 0 0 0 0 40 1 0   0 0 0 0 0 0 0 0 100 0" << endl;
-    ofstream f100( "/tmp/uglehack/100/stat" );
-    f100 << "100 (mg1) S 0 0 0 0 0 0 0 0 1000 0 0 0 0 0 0 0 0 0 0 0 1532 0" << endl;
-    ofstream f101( "/tmp/uglehack/101/stat" );
-    f101 << "101 (mg1c) S 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1432 0" << endl;
-    ofstream f200( "/tmp/uglehack/200/stat" );
-    f200 << "200 (mg2) S 0 0 0 0 0 0 0 0 4576 0 0 0 0 0 0 0 0 0 0 0 3883 0" << endl;
-    ofstream f201( "/tmp/uglehack/201/stat" );
-    f201 << "201 (mg2c) S 0 0 0 0 0 0 0 0 69 0 0 0 0 0 0 0 0 0 0 0 4231235 0" << endl;
-    ofstream f202( "/tmp/uglehack/202/stat" );
-    f202 << "202 (mg2cc) S 0 0 0 0 0 0 0 0 42 0 0 0 0 0 0 0 0 0 0 0 476238 0" << endl;
+    
+    makeFakeProc();
 
     x.scanProcesses( "/tmp/uglehack", 42 );
 
@@ -267,4 +305,66 @@ BOOST_AUTO_TEST_CASE( ServiceList )
     i.manage( p1 );
 
     BOOST_CHECK_EQUAL( Service::list( i ), "{\"services\":{\"100\":{\"value\":\"0\",\"rss\":\"100\",\"recentfaults\":\"29\"}}}\n" );
+}
+
+
+#include "uid.h"
+
+BOOST_AUTO_TEST_CASE( ReadEtcPasswd )
+{
+    ofstream o( "/tmp/passwd" );
+    o << "root:x:0:0:root:/root:/bin/zsh\n"
+	"daemon:x:1:1:daemon:/usr/sbin:/bin/sh\n"
+	"bin:x:2:2:bin:/bin:/bin/sh\n"
+	"sys:x:3:3:sys:/dev:/bin/sh\n"
+	"sync:x:4:65534:sync:/bin:/bin/sync\n"
+	"games:x:5:60:games:/usr/games:/bin/sh\n"
+	"man:x:6:12:man:/var/cache/man:/bin/sh\n"
+	"lp:x:7:7:lp:/var/spool/lpd:/bin/sh\n"
+	"lp2:x:2000:2000:lp:/var/spool/lpd:/bin/sh\n"
+	"lp3:x:2002:7:lp:/var/spool/lpd:/bin/sh\n";
+    set<int> p = inPasswd( false, "/tmp/passwd" );
+    BOOST_CHECK( p.find( 0 ) != p.end() );
+    BOOST_CHECK( p.find( 5 ) != p.end() );
+    BOOST_CHECK( p.find( 7 ) != p.end() );
+    BOOST_CHECK( p.find( 2000 ) != p.end() );
+    BOOST_CHECK( p.find( 2002 ) != p.end() );
+    BOOST_CHECK( p.find( 2001 ) == p.end() );
+    BOOST_CHECK( p.find( 2003 ) == p.end() );
+    BOOST_CHECK( p.find( 20003 ) == p.end() );
+    BOOST_CHECK( p.find( 60000 ) == p.end() );
+
+    set<int> g = inPasswd( true, "/tmp/passwd" );
+    BOOST_CHECK( g.find( 0 ) != g.end() );
+    BOOST_CHECK( g.find( 5 ) != g.end() );
+    BOOST_CHECK( g.find( 7 ) != g.end() );
+    BOOST_CHECK( g.find( 2000 ) != g.end() );
+    BOOST_CHECK( g.find( 2002 ) == g.end() );
+    BOOST_CHECK( g.find( 2001 ) == g.end() );
+    BOOST_CHECK( g.find( 2003 ) == g.end() );
+}
+
+
+BOOST_AUTO_TEST_CASE( ReadProcUids )
+{
+    makeFakeProc();
+    set<int> p = inProc( false, "/tmp/uglehack" );
+    BOOST_CHECK( p.find( 0 ) != p.end() );
+    BOOST_CHECK( p.find( 5 ) == p.end() );
+    BOOST_CHECK( p.find( 2000 ) != p.end() );
+    BOOST_CHECK( p.find( 2001 ) != p.end() );
+    BOOST_CHECK( p.find( 2002 ) == p.end() );
+    BOOST_CHECK( p.find( 2003 ) == p.end() );
+    BOOST_CHECK( p.find( 20003 ) == p.end() );
+    BOOST_CHECK( p.find( 60000 ) == p.end() );
+
+    set<int> g = inProc( true, "/tmp/uglehack" );
+    BOOST_CHECK( g.find( 0 ) != g.end() );
+    BOOST_CHECK( g.find( 5 ) == g.end() );
+    BOOST_CHECK( g.find( 2000 ) != g.end() );
+    BOOST_CHECK( g.find( 2002 ) != g.end() );
+    BOOST_CHECK( g.find( 2001 ) == g.end() );
+    BOOST_CHECK( g.find( 2003 ) == g.end() );
+    BOOST_CHECK( g.find( 20003 ) == g.end() );
+    BOOST_CHECK( g.find( 60000 ) == g.end() );
 }
