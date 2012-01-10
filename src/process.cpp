@@ -3,6 +3,7 @@
 #include "process.h"
 
 #include <unistd.h>
+#include <signal.h>
 
 
 /*! Constructs a Process to look out for some child process.
@@ -150,4 +151,26 @@ int Process::recentPageFaults() const
 void Process::fakefork( int fakepid )
 {
     p = fakepid;
+}
+
+
+/*! Stops the process, either by calling the script specified in the
+    ServerSpec or by killing it. If the latter, then the kill is
+    rude. Anyone who wants a pleasant kill can supply a suitable
+    script.
+*/
+
+void Process::stop()
+{
+    if ( !valid() )
+	return;
+
+    string script = s.shutdownScript();
+    if ( script.empty() ) {
+	::kill( 9, p );
+    } else {
+	// trouble here. need new functionality.  the uid used needs
+	// to be visible to the c++, not assigned by sh at startup
+	// time. foo.
+    }
 }

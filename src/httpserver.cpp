@@ -249,7 +249,7 @@ void HttpServer::respond()
 	    send( httpResponse( 400, "text/plain",
 				"No such service" ) );
 	} else {
-	    // hmm?
+	    s.stop();
 	    close();
 	}
 	return;

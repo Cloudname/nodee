@@ -22,6 +22,8 @@ public:
 
     void fakefork( int fakepid );
 
+    void stop();
+
     int value() const { return s.value(); }
     int expectedPeakMemory() const { return s.expectedPeakMemory(); }
     int expectedTypicalMemory() const { return s.expectedTypicalMemory(); }

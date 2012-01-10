@@ -71,6 +71,8 @@ ServerSpec ServerSpec::parseJson( const string & specification )
 	s.eim = pt.get<int>( "typicalram", 0 );
 	s.epm = pt.get<int>( "peakram", 0 );
 	s.v = pt.get<int>( "value", 0 );
+	s.su = pt.get<string>( "startupscript", "" );
+	s.sd = pt.get<string>( "shutdownscript", "" );
     } catch ( boost::property_tree::ptree_bad_data e ) {
 	s.c.clear();
     }
@@ -129,4 +131,30 @@ int ServerSpec::expectedPeakMemory() const
 int ServerSpec::value() const
 {
     return v;
+}
+
+
+/*! Returns the path to the server's startup script, relative to the
+    server's own root. Typically this will be something like
+    scripts/startup.sh, although it may be anything.
+    
+    Returns an empty string if none has been set.
+*/
+
+string ServerSpec::startupScript() const
+{
+    return su;
+}
+
+
+/*! Returns the path to the server's shutdowbn script, relative to the
+    server's own root. Typically this will be something like
+    scripts/shutdown.sh, although it may be anything.
+    
+    Returns an empty string if none has been set.
+*/
+
+string ServerSpec::shutdownScript() const
+{
+    return sd;
 }

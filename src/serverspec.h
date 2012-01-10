@@ -22,6 +22,9 @@ public:
     int expectedPeakMemory() const;
     int value() const;
 
+    string startupScript() const;
+    string shutdownScript() const;
+
     bool valid() const { return !c.empty(); }
 
 private:
@@ -30,6 +33,8 @@ private:
     int eim;
     int epm;
     int v;
+    string su;
+    string sd;
 };
 
 

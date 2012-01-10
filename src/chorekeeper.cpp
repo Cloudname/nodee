@@ -66,6 +66,8 @@ void ChoreKeeper::start()
 	    if ( jesus.valid() ) {
 		// we kill with signal 9, since we're already in a bad  state.
 		::kill( jesus.pid(), 9 );
+		// come to think of it, should we use Process::stop()?
+		
 		// but once that's done, we record that we're NOT
 		// thrashing, since it's quite likely that even after
 		// we've killed a process, others will need to page in
