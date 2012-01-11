@@ -117,6 +117,7 @@ set<int> inProc( bool gid, const char * proc ) {
 		    }
 		}
 	    }
+	    ++i;
 	}
     } catch (const filesystem_error& ex) {
 	// hm. really strange. when might this happen? races?
