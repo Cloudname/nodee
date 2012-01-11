@@ -60,6 +60,8 @@ int main( int argc, char ** argv )
     cli.add( conf );
     store( parse_command_line( argc, argv, cli ), vm );
 
+    store( parse_environment( cli, "NODEE_" ), vm );
+
     ifstream cfs( cf.c_str() );
     store( parse_config_file( cfs, conf, false ), vm );
 

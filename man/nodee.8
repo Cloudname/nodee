@@ -20,7 +20,7 @@ daemon to start, manage and stop services running within a Cloudname cluster.
 .PP
 Once started,
 .B nodee
-is managed completely using its embedded web server. There is a RESTful
+is managed completely using its embedded web server. There is an
 HTTP API to start/stop services, and additionally
 .B nodee
 records some information about the host on which it runs using
@@ -28,13 +28,33 @@ records some information about the host on which it runs using
 so that Cloudname users may know that the host exists and how it can be
 used.
 .SH OPTIONS
-The --help flag emit terse help text.
+Each option can also be specified in the configuration file and as
+environment variables. Environment variables override the configuration
+file; command-line option override both. There is one exception: if --depot
+(AKA depot, AKA NODEE_DEPOT) is specified several times, all apply.
+.PP
+The --help flag emits terse help text.
 .PP
 The --port (-P) flag allows running
 .B nodee
-on a different port than its default 40.
+on a different port than its default 40. This option is called
+.B port
+in the configuration file and NODEE_PORT in the environment. (Other
+options are similarly named.)
 .PP
-The --zookeeper flag specifies where to 
+The --basedir flag specifies the base directory
+.B nodee
+uses for all its work.
+.PP
+The --artefactdir flag specifies where (relative to the base directory)
+.B nodee
+stores the artefacts it downloads.
+.PP
+The --workdir flag specifies where (relative to the base directory)
+.B nodee
+creates working directories for running services.
+.PP
+The --zk flag specifies where to locate zookeeper.
 .SH HTTP API
 Nothing written yet.
 .PP
