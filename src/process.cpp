@@ -34,7 +34,7 @@ Process::Process()
 
 
 /*! Fork a child process, redirect its stdin/stdout/stderr
-  appriopriately, and call start() in the child.
+    appriopriately, and call start() in the child.
 */
 
 void Process::fork()
@@ -49,10 +49,14 @@ void Process::fork()
 	return;
     } else if ( p == 0 ) {
 	// we're in the child.
+
+	// the setregid and setreuid calls will return failure if
+	// nodee is being debugged as non-root. I think that's
+	// fine, so I just cast to void to underscore the point.
 	if ( g )
-	    setregid( g, g );
+	    (void)::setregid( g, g );
 	if ( u )
-	    setreuid( u, u );
+	    (void)::setreuid( u, u );
 	start();
     } else {
 	// we're in the parent.
