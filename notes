@@ -1,0 +1,72 @@
+Startup
+
+  Dybdahl suggested that if anything fails during startup, nodee
+  should just reboot the host. I agree. It converts many failure modes
+  to just one single failure type: "Host cannot boot".
+
+  As a side benefit, this should also teach developers to not run as
+  root while testing on their workstations. ;)
+
+
+Updating nodee
+
+  Updating nodee to a new version currently involves restarting all
+  managed services. I could design a handover so nodee would close its
+  HTTP port, store the Process data in a json thingie, exec() the new
+  nodee without fork() and read the json, creating Process data
+  appropriately.
+
+  I don't think it's worth the bother, though. Too complex and it's a
+  special case. Better to just update nodee, then shut down all
+  services and reboot the host.
+
+
+ZK dependencies
+
+  Nodee has been ZK-less for a while, mostly because I didn't like the
+  zk code. Intuition more than anything.
+
+  I think I'll rewrite it as follows:
+
+  1. Serve a /hoststatus URL with JSON suitable for storing in the
+     host's ephemeral ZK node. 
+
+  2. Run a ZK client as Process at startup, and restart it whenever it
+     stops.
+
+  3. The ZK client connects to localhost and asks for /hoststatus
+     every so often, and writes the response into the ephemeral node.
+
+  That way, the nodee process doesn't depend on anything, the ZK
+  dependency is clean, ZK is updated properly, startup is good.
+
+
+Json specifications
+
+  There isn't any; where should that live?
+
+
+Nodee home page
+
+  The source refers to a home page; that's okay, but there isn't
+  any. Invent a URL and change httpserver.cpp and nodee.8.
+
+
+Init scripts
+
+  When nodee crashes, the host should reboot. Again, fewer failure modes.
+
+  This is easy to do in upstart: Have a job which is "started" when
+  nodee stops, and which runs /sbin/shutdown -r now as its "startup"
+  command.
+
+  In init.d, it has to be a little more hacky. We have to run nodee
+  inside a parent process which runs 'nodee;/sbin/shutdown -r
+  now". Foo. I don't want to bother with this.
+
+
+D3
+
+  It sounds very easy to write D3 stuff to visualise /hoststatus.
+
+
