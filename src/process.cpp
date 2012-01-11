@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "uid.h"
+
 
 /*! Constructs a Process to look out for some child process.
 
@@ -47,6 +49,10 @@ void Process::fork()
 	return;
     } else if ( p == 0 ) {
 	// we're in the child.
+	if ( g )
+	    setregid( g, g );
+	if ( u )
+	    setreuid( u, u );
 	start();
     } else {
 	// we're in the parent.
@@ -173,4 +179,35 @@ void Process::stop()
 	// to be visible to the c++, not assigned by sh at startup
 	// time. foo.
     }
+}
+
+
+/*! Returns the UID used by this child, or 0 if the Process is not
+    valid(). In theory, even valid() processes may run as root, but in
+    practice that should not happen.
+*/
+
+int Process::uid() const
+{
+    return valid() ? u : 0;
+}
+
+
+/*! Returns the GID used by this child, or 0 if the Process is not
+    valid(). In theory, even valid() processes may run as root, but in
+    practice that should not happen.
+*/
+
+int Process::gid() const
+{
+    return valid() ? g : 0;
+}
+
+
+/*! Picks otherwise unused UID and GID for this process. */
+
+void Process::assignUidGid()
+{
+    u = chooseFreeUid();
+    g = chooseFreeGid();
 }

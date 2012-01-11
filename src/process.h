@@ -38,12 +38,18 @@ public:
 
     static void launch( const ServerSpec & what );
 
+    int uid() const;
+    int gid() const;
+    void assignUidGid();
+
 private:
     int p;
     ServerSpec s;
     int faults;
     int prevFaults;
     int rss;
+    int u;
+    int g;
 };
 
 
