@@ -1,6 +1,6 @@
 # Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
-COMPILER=clang
+COMPILER=g++
 CFLAGS=-O3 -W -Wall -Werror
 
 all: dropprivileges nodee nodeetest

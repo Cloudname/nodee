@@ -33,7 +33,7 @@ static string filename( const boost::filesystem::directory_iterator & i )
 set<int> inPasswd( bool gid, const char * filename ) {
     set<int> passwd;
 
-    ifstream p( "/etc/passwd" );
+    ifstream p( filename );
     boost::char_separator<char> x( ":" );
     while ( p ) {
 	string line;
@@ -45,6 +45,7 @@ set<int> inPasswd( bool gid, const char * filename ) {
 	    boost::tokenizer<boost::char_separator<char> >::iterator e 
 		= t.end();
 	    // i points to the user name
+	    ++i; // now i points to the password
 	    ++i; // now i points to the UID
 	    if ( gid )
 		++i; // i now points to the GID

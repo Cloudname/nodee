@@ -323,6 +323,7 @@ BOOST_AUTO_TEST_CASE( ReadEtcPasswd )
 	"lp:x:7:7:lp:/var/spool/lpd:/bin/sh\n"
 	"lp2:x:2000:2000:lp:/var/spool/lpd:/bin/sh\n"
 	"lp3:x:2002:7:lp:/var/spool/lpd:/bin/sh\n";
+    o.flush();
     set<int> p = inPasswd( false, "/tmp/passwd" );
     BOOST_CHECK( p.find( 0 ) != p.end() );
     BOOST_CHECK( p.find( 5 ) != p.end() );
@@ -336,7 +337,7 @@ BOOST_AUTO_TEST_CASE( ReadEtcPasswd )
 
     set<int> g = inPasswd( true, "/tmp/passwd" );
     BOOST_CHECK( g.find( 0 ) != g.end() );
-    BOOST_CHECK( g.find( 5 ) != g.end() );
+    BOOST_CHECK( g.find( 60 ) != g.end() );
     BOOST_CHECK( g.find( 7 ) != g.end() );
     BOOST_CHECK( g.find( 2000 ) != g.end() );
     BOOST_CHECK( g.find( 2002 ) == g.end() );
