@@ -6,10 +6,19 @@
 #include "httplistener.h"
 #include "chorekeeper.h"
 #include "init.h"
+#include "conf.h"
 
 #include <iostream>
+#include <fstream>
 
 #include <boost/program_options.hpp>
+#include <boost/program_options/parsers.hpp>
+
+#include <boost/algorithm/string.hpp>
+
+#if !defined(CONFFILE)
+#define CONFFILE "/etc/nodee/config"
+#endif
 
 
 using namespace boost::program_options;
@@ -18,19 +27,62 @@ using namespace boost::program_options;
 int main( int argc, char ** argv )
 {
     int port;
-    options_description desc( "Allowed options" );
-    desc.add_options()
+    vector<string> depots;
+    string cf( CONFFILE );
+
+    options_description cli( "Command-line options" );
+    cli.add_options()
 	( "help", "produce help message" )
-	( "port,P", value<int>( &port )->default_value(40),
+	( "config,C", value<string>(&cf)->default_value( CONFFILE ),
+	  "specify configuration file" )
+	( "version,V", "show easter egg" );
+
+    options_description conf( "Configuration file (and command-line) options" );
+    conf.add_options()
+	( "port,P", value<int>( &port )->default_value( 40 ),
 	  "set nodee TCP port" )
-	( "zookeeper", value<string>(), "zookeeper location" );
+	( "depot", value<vector<string> >( &depots )->composing(),
+	  "add artefact depot (e.g. example=http://artefactory.example.com/)" )
+	( "dir",
+	  value<string>( &Conf::basedir )->default_value( "/usr/local/nodee" ),
+	  "specify base directory" )
+	( "workdir",
+	  value<string>( &Conf::workdir )->default_value( "work" ),
+	  "specify work directory, relative to basedir" )
+	( "artefactdir",
+	  value<string>( &Conf::artefactdir )->default_value( "artefacts" ),
+	  "specify where to store artefacts, relative to basedir" )
+	( "zookeeper", value<string>( &Conf::zk ),
+	  "zookeeper location (e.g. FIXME)" );
 
     variables_map vm;
-    store( parse_command_line( argc, argv, desc ), vm );
+
+    cli.add( conf );
+    store( parse_command_line( argc, argv, cli ), vm );
+
+    ifstream cfs( cf.c_str() );
+    store( parse_config_file( cfs, conf, false ), vm );
+
     notify( vm );
 
+    if ( depots.size() ) {
+	int i = depots.size();
+	while ( i ) {
+	    --i;
+
+	    std::vector<std::string> tmp;
+	    boost::split( tmp, depots[i], boost::is_any_of("=") );
+	    if ( tmp.size() != 2 ) {
+		cerr << "nodee: Syntax error in artefact depot: "
+		     << depots[i] << endl;
+		exit( 1 );
+	    }
+	    Conf::depots[tmp[0]] = tmp[1];
+	}
+    }
+
     if ( vm.count( "help" ) ) {
-	cout << desc << endl;
+	cout << cli << endl;
 	exit( 0 );
     }
 

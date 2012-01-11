@@ -11,6 +11,7 @@ class Process
 public:
     Process();
     Process( const Process & );
+    Process( int, int );
     virtual ~Process() {}
 
     int pid() const { return p; }
@@ -36,11 +37,14 @@ public:
     bool operator==( const Process & other ) { return p == other.p; }
     void operator=( const Process & other );
 
-    static void launch( const ServerSpec & what );
+    static void launch( const ServerSpec & what, class Init & );
 
     int uid() const;
     int gid() const;
     void assignUidGid();
+
+    void setRoot( const string & );
+    string root() const;
 
 private:
     int p;

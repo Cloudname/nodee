@@ -6,6 +6,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "serverspec.h"
+#include "conf.h"
 
 
 
@@ -74,6 +75,22 @@ ServerSpec ServerSpec::parseJson( const string & specification )
 	s.su = pt.get<string>( "startupscript", "" );
 	s.sd = pt.get<string>( "shutdownscript", "" );
     } catch ( boost::property_tree::ptree_bad_data e ) {
+	s.c.clear();
+	s.setError( "Parse error" );
+	return s;
+    }
+
+    if ( s.a.empty() ) {
+	s.setError( "No artifact specified" );
+	s.c.clear();
+    } else if ( Conf::url( s.a ).empty() ) {
+	s.setError( "Unable to find a repository for artifact " + s.a );
+	s.c.clear();
+    } else if ( Conf::filename( s.a ).empty() ) {
+	s.setError( "Unable to construct a file name for artifact " + s.a );
+	s.c.clear();
+    } else if ( s.c.empty() ) {
+	s.setError( "No coordinate specified" );
 	s.c.clear();
     }
 
@@ -157,4 +174,54 @@ string ServerSpec::startupScript() const
 string ServerSpec::shutdownScript() const
 {
     return sd;
+}
+
+
+/*! Returns the specified artifact, typically a string such as
+ comoyo:nodee:1.0.0.
+ */
+
+string ServerSpec::artifact() const
+{
+    return a;
+}
+
+
+/*! Returns the URL corresponding to this artifact. Always succeeds if
+    the ServerSpec is valid().
+*/
+
+string ServerSpec::artifactUrl() const
+{
+    return Conf::url( a );
+}
+
+
+/*! Returns the URL corresponding to this artifact. Always succeeds if
+    the ServerSpec is valid().
+*/
+
+string ServerSpec::artifactFilename() const
+{
+    return Conf::filename( a );
+}
+
+
+/*! Records that \a error occured while creating this ServerSpec. The
+    initial value is an empty string.
+*/
+
+void ServerSpec::setError( const string & error )
+{
+    e = error;
+}
+
+
+/*! Returns whatever setError() set, or an empty string if setError()
+    has not been called.
+*/
+
+string ServerSpec::error() const
+{
+    return e;
 }

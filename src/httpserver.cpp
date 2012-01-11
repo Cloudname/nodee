@@ -232,7 +232,8 @@ void HttpServer::respond()
 	    send( httpResponse( 400, "text/plain",
 				"Parse error for the JSON body" ) );
 	} else {
-	    Process::launch( s );
+	    
+	    Process::launch( s, init );
 	    send( httpResponse( 200, "text/plain",
 				"Will launch, or try to" ) );
 	}
@@ -261,7 +262,7 @@ void HttpServer::respond()
 	    send( httpResponse( 400, "text/plain",
 				"Parse error for the JSON body" ) );
 	} else {
-	    Process::launch( s );
+	    Process::launch( s, init );
 	    send( httpResponse( 200, "text/plain",
 				"Will launch, or try to" ) );
 	}

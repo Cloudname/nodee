@@ -3,8 +3,14 @@
 #include "process.h"
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
+#include <sysexits.h>
 
+#include <boost/lexical_cast.hpp>
+
+#include "conf.h"
+#include "init.h"
 #include "uid.h"
 
 
@@ -80,23 +86,34 @@ void Process::handleExit( int status, int signal )
 }
 
 
-/*! Called in the child process to start the child's work.
-
-*/
+/*! Called in the child process to start the child's work. */
 
 void Process::start()
 {
+    string script = s.startupScript();
+    if ( script.empty() ) {
+	script = root() + "/scripts/startup";
+    } else {
+	script = root() + "/" + script;
+    }
+    ::execvp( script.c_str(), 0 );
+    ::exit( EX_NOINPUT );
+}	
 
-}
 
 
-/*!
+/*! Launches a new Process based on \a what, managed by \a
+ *  init. Returns quickly; the new Process will go on its way.
 
 */
 
-void Process::launch( const ServerSpec & what )
+void Process::launch( const ServerSpec & what, Init & init )
 {
     Process p;
+
+    p.s = what;
+    init.manage( p );
+    p.fork();
 }
 
 
@@ -107,6 +124,20 @@ Process::Process( const Process & other )
       faults( other.faults ),
       prevFaults( other.prevFaults ),
       rss( other.rss )
+{
+}
+
+
+/*! Constructs a Process without any ServerSpec and with uid() \a uid
+    and gid() \a gid.
+  
+    This is a helper for Script, which needs to start() using those
+    IDs.
+*/
+
+Process::Process( int uid, int gid )
+    : p( 0 ), faults( 0 ), prevFaults( 0 ),
+      rss( 0 ), u( uid ), g( gid )
 {
 }
 
@@ -214,4 +245,15 @@ void Process::assignUidGid()
 {
     u = chooseFreeUid();
     g = chooseFreeGid();
+}
+
+
+/*! Returns the root directory used by this Process. Automatically
+    computed so as to be unique for each Process.
+*/
+
+string Process::root() const
+{
+    return Conf::basedir + "/" + Conf::workdir + "/" + s.coordinate() +
+	boost::lexical_cast<string>( s.port() );
 }
