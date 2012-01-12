@@ -51,30 +51,42 @@ ChoreKeeper::ChoreKeeper( Init & i )
 void ChoreKeeper::start()
 {
     while( true ) {
-	::sleep( 1 );
-	scanProcesses( "/proc", getpid() );
-	detectThrashing();
-	if ( isThrashing() ) {
-	    Process jesus;
-	    jesus = furthestOverPeak();
-	    if ( !jesus.valid() )
-		jesus = furthestOverExpected();
-	    if ( !jesus.valid() )
-		jesus = leastValuable();
-	    if ( !jesus.valid() )
-		jesus = biggest();
-	    if ( jesus.valid() ) {
-		// we kill with signal 9, since we're already in a bad  state.
-		::kill( jesus.pid(), 9 );
-		// come to think of it, should we use Process::stop()?
+	try {
+	    ::sleep( 1 );
+	    scanProcesses( "/proc", getpid() );
+	    detectThrashing();
+	    if ( isThrashing() ) {
+		Process jesus;
+		jesus = furthestOverPeak();
+		if ( !jesus.valid() )
+		    jesus = furthestOverExpected();
+		if ( !jesus.valid() )
+		    jesus = leastValuable();
+		if ( !jesus.valid() )
+		    jesus = biggest();
+		if ( jesus.valid() ) {
+		    // we kill with signal 9, since we're already in a
+		    // bad state.
+		    ::kill( jesus.pid(), 9 );
+		    // come to think of it, should we use
+		    // Process::stop()?
 		
-		// but once that's done, we record that we're NOT
-		// thrashing, since it's quite likely that even after
-		// we've killed a process, others will need to page in
-		// their data, and we don't want to react to that
-		// activity by killing more processes.
-		thrashing[0] = false;
+		    // but once that's done, we record that we're NOT
+		    // thrashing, since it's quite likely that even
+		    // after we've killed a process, others will need
+		    // to page in their data, and we don't want to
+		    // react to that activity by killing more
+		    // processes.
+		    thrashing[0] = false;
+		}
 	    }
+	} catch (...) {
+	    // if any exceptions are thrown, the chorekeeper cannot
+	    // die, that would be horrible but it's perhaps best to
+	    // back off a little. so we resume working after 10
+	    // seconds instead of 1.
+	    ::sleep( 9 );
+	    // 1+9=10.
 	}
     }
 }
