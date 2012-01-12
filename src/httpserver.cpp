@@ -55,15 +55,19 @@ HttpServer::HttpServer( int fd, Init & i )
 
 void HttpServer::start()
 {
-    while ( true ) {
-	parseRequest( readRequest() );
-	if ( f >= 0 && cl > 0 )
-	    readBody();
+    try {
+	while ( true ) {
+	    parseRequest( readRequest() );
+	    if ( f >= 0 && cl > 0 )
+		readBody();
 
-	if ( f < 0 )
-	    return;
+	    if ( f < 0 )
+		return;
 
-	respond();
+	    respond();
+	}
+    } catch (...) {
+	close();
     }
 }
 
