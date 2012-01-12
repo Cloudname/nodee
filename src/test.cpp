@@ -395,3 +395,55 @@ BOOST_AUTO_TEST_CASE( ArtefactBlah )
     BOOST_CHECK_EQUAL( Conf::filename( "a:b" ), "" );
     BOOST_CHECK_EQUAL( Conf::filename( "foo:/etc/passwd:1.0" ), "" );
 }
+
+
+#include "hoststatus.h"
+
+BOOST_AUTO_TEST_CASE( CpuCounter )
+{
+    ofstream o( "/tmp/cpuinfo" );
+    o << "processor	: 0\n"
+	"vendor_id	: AuthenticAMD\n"
+	"cpu family	: 20\n"
+	"cpu MHz		: 800.000\n"
+	"cpuid level	: 6\n"
+	"wp		: yes\n"
+	"\n"
+	"processor	: 1\n"
+	"vendor_id	: AuthenticAMD\n"
+	"cpu family	: 20\n";
+    o.flush();
+    BOOST_CHECK_EQUAL( HostStatus::cores( "/tmp/cpuinfo" ), 2 );
+}
+
+BOOST_AUTO_TEST_CASE( MemSizeEstimator )
+{
+    ofstream m( "/tmp/meminfo" );
+    m << "MemTotal:        7787796 kB\n"
+	"MemFree:          851632 kB\n"
+	"Buffers:          322116 kB\n"
+	"Cached:          5303584 kB\n"
+	"SwapCached:            0 kB\n"
+	"Active:          1825320 kB\n"
+	"Inactive:        4744892 kB\n"
+	"Active(anon):     699736 kB\n"
+	"Inactive(anon):   279968 kB\n"
+	"Active(file):    1125584 kB\n"
+	"Inactive(file):  4464924 kB\n"
+	"Unevictable:           0 kB\n"
+	"Mlocked:               0 kB\n"
+	"SwapTotal:       7974908 kB\n"
+	"SwapFree:        7974800 kB\n"
+	"HugePages_Total:       0\n"
+	"HugePages_Free:        0\n"
+	"HugePages_Rsvd:        0\n"
+	"HugePages_Surp:        0\n"
+	"Hugepagesize:       2048 kB\n";
+    m.flush();
+
+    int t, a;
+    HostStatus::readProcMeminfo( "/tmp/meminfo", t, a );
+
+    BOOST_CHECK_EQUAL( t, 7787796 );
+    BOOST_CHECK_EQUAL( a, 851632 + 4744892 );
+}

@@ -2,6 +2,7 @@
 
 #include "httpserver.h"
 
+#include "hoststatus.h"
 #include "serverspec.h"
 #include "service.h"
 #include "process.h"
@@ -300,6 +301,13 @@ void HttpServer::respond()
 	string o( httpResponse( 200, "application/json",
 				"Artifact list follows" ) );
 	o.append( Service::list( init ) );
+	send( o );
+    }
+
+    if ( p == "/nodee/status" ) {
+	string o( httpResponse( 200, "application/json",
+				"Let me tell you how I feel" ) );
+	o.append( (string)HostStatus() );
 	send( o );
     }
 
