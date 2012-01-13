@@ -67,6 +67,7 @@ int main( int argc, char ** argv )
 
     notify( vm );
 
+    bool dumpdepots = false;
     if ( depots.size() ) {
 	int i = depots.size();
 	while ( i ) {
@@ -79,7 +80,28 @@ int main( int argc, char ** argv )
 		     << depots[i] << endl;
 		exit( 1 );
 	    }
+	    if ( !Conf::depots[tmp[0]].empty() &&
+		 Conf::depots[tmp[0]] != tmp[1] ) {
+		cout << "nodee: Ignoring depot "
+		     << Conf::depots[tmp[0]]
+		     << " for group "
+		     << tmp[0]
+		     << endl;
+		dumpdepots = true;
+	    }
 	    Conf::depots[tmp[0]] = tmp[1];
+	}
+    }
+
+    if ( dumpdepots ) {
+	map<string,string>::iterator i = Conf::depots.begin();
+	while ( i != Conf::depots.end() ) {
+	    cout << "nodee: Group "
+		 << i->first
+		 << " uses depot "
+		 << i->second
+		 << endl;
+	    ++i;
 	}
     }
 
