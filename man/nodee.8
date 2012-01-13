@@ -87,7 +87,7 @@ unnecessary since
 demand-loads artifacts), and one to report on the host's status.
 .PP
 .B POST /service/start
-starts a service, based on a JSON document supplied in the HTTP
+starts a service, based on a JSON object supplied in the HTTP
 request body.
 .PP
 The JSON contents are not yet documented. TBD.
@@ -102,7 +102,7 @@ lists the running services in JSON format.
 The JSON contents are not yet documented. TBD.
 .PP
 .B /artefact/install
-installs an artefact, based on a JSON document supplied in the HTTP
+installs an artefact, based on a JSON object supplied in the HTTP
 request body.
 .PP
 The JSON contents are not yet documented. TBD.
@@ -121,8 +121,8 @@ The JSON contents are not yet documented. TBD.
 In addition to the seven API calls,
 .B nodee
 serves a few more URLs using invariant responses. For instance,
-/robots.txt tels any passing bots to not index this site. These are
-not meant to be used and their exact contents may change.
+/robots.txt tells any passing bots to stay away from the "site". These
+are not meant to be used and their exact contents may change.
 .SH CONFIGURATION FILE
 .BR Nodee's
 configuration file uses the classic line-oriented format:
