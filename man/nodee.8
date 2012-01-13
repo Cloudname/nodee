@@ -30,10 +30,10 @@ used.
 .SH OPTIONS
 Each option can also be specified in the configuration file and as
 environment variables. Environment variables override the configuration
-file; command-line option override both. There is one exception: if --depot
-(AKA depot, AKA NODEE_DEPOT) is specified several times, all apply.
+file; command-line options override both.
 .PP
-The --help flag emits terse help text.
+The --help flag emits terse help text and the --version flag emits a
+version number.
 .PP
 The --port (-P) flag allows running
 .B nodee
@@ -42,7 +42,30 @@ on a different port than its default 40. This option is called
 in the configuration file and NODEE_PORT in the environment. (Other
 options are similarly named.)
 .PP
-The --basedir flag specifies the base directory
+The --depot flag specifies the an artefact depot, in the format
+group=url, for example --depot
+bigco=http://artefactory.i.bigco.com/webapp/.
+When
+.B Nodee
+needs to download an artifact, it will append its name to the URL
+for the relevant group and expect to find a file there.
+.PP
+.B Nodee
+uses wget or curl to do the actual downloading, so the protocols and
+other features supported are those of either wget or curl. Notably,
+http://root:pils@internal.google.com will authenticate as root using
+password pils on internal.google.com.
+.PP
+It's possible to specify several depots;
+.B nodee
+will use all. However, if you specify two depots with the same group
+name, only one will be used. As you would expect, the command line
+overrides the environment, which in turn overrides the configuration
+file.
+.B Nodee
+tells you what it does, just to be sure.
+.PP
+The --dir option specifies the base directory
 .B nodee
 uses for all its work.
 .PP
@@ -54,11 +77,66 @@ The --workdir flag specifies where (relative to the base directory)
 .B nodee
 creates working directories for running services.
 .PP
-The --zk flag specifies where to locate zookeeper.
+The --zookeeper flag specifies where to locate zookeeper.
 .SH HTTP API
-Nothing written yet.
+.B Nodee
+serves seven URLs: Three to start/stop/list running services, three to
+install/remove/list locally stored artifacts (this is strictly
+unnecessary since
+.B nodee
+demand-loads artifacts), and one to report on the host's status.
 .PP
-[Something will be, though.
+.B POST /service/start
+starts a service, based on a JSON document supplied in the HTTP
+request body.
+.PP
+The JSON contents are not yet documented. TBD.
+.PP
+.BR /service/stop /number
+stops the specified service. The number is returned by
+/service/list.
+.PP
+.B /service/list
+lists the running services in JSON format.
+.PP
+The JSON contents are not yet documented. TBD.
+.PP
+.B /artefact/install
+installs an artefact, based on a JSON document supplied in the HTTP
+request body.
+.PP
+The JSON contents are not yet documented. TBD.
+.PP
+.BR /artefact/remove /name
+removes the artefact of the specified name.
+.PP
+.B /artefact/list
+lists the locally stored artefacts as a simple JSON array/list.
+.PP
+.B /nodee/status
+returns a few key numbers describing the host's status.
+.PP
+The JSON contents are not yet documented. TBD.
+.PP
+In addition to the seven API calls,
+.B nodee
+serves a few more URLs using invariant responses. For instance,
+/robots.txt tels any passing bots to not index this site. These are
+not meant to be used and their exact contents may change.
+.SH CONFIGURATION FILE
+.BR Nodee's
+configuration file uses the classic line-oriented format:
+.PP
+.in +4
+port=40
+.br
+# this is a comment
+.br
+basedir=/opt/foo
+.in -4
+.PP
+All command-line options except --config and --help also exist as
+configuration file options.
 .SH DIAGNOSTICS
 The return code of
 .B nodee
@@ -71,7 +149,9 @@ Well, well. Very likely.
 The Cloudname developers, primarily
 Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>
 .SH VERSION
-This man page covers nodee version $VERSION, released $DATE,
+This man page covers
+.B nodee
+version $VERSION, released $DATE,
 http://cloudname.org/nodee/$VERSION
 .SH SEE ALSO
 http://cloudname.org,

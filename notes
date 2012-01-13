@@ -70,3 +70,9 @@ D3
   It sounds very easy to write D3 stuff to visualise /hoststatus.
 
 
+Release and versions
+
+  Write some magic to write the version number into the man page and
+  --version. Hm. Or better, copy the one I already have into nodee.
+
+
