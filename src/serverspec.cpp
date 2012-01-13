@@ -67,7 +67,8 @@ ServerSpec ServerSpec::parseJson( const string & specification )
     }
 
     try {
-	s.c = pt.get<std::string>( "tarball" );
+	s.a = pt.get<std::string>( "artefact" );
+	s.url = pt.get<std::string>( "url" );
 	s.p = pt.get<int>( "port", 0 );
 	s.eim = pt.get<int>( "typicalram", 0 );
 	s.epm = pt.get<int>( "peakram", 0 );
@@ -75,23 +76,23 @@ ServerSpec ServerSpec::parseJson( const string & specification )
 	s.su = pt.get<string>( "startupscript", "" );
 	s.sd = pt.get<string>( "shutdownscript", "" );
     } catch ( boost::property_tree::ptree_bad_data e ) {
-	s.c.clear();
+	s.a.clear();
 	s.setError( "Parse error" );
 	return s;
     }
 
     if ( s.a.empty() ) {
 	s.setError( "No artifact specified" );
-	s.c.clear();
+	s.a.clear();
     } else if ( Conf::url( s.a ).empty() ) {
 	s.setError( "Unable to find a repository for artifact " + s.a );
-	s.c.clear();
+	s.a.clear();
     } else if ( Conf::filename( s.a ).empty() ) {
 	s.setError( "Unable to construct a file name for artifact " + s.a );
-	s.c.clear();
+	s.a.clear();
     } else if ( s.c.empty() ) {
 	s.setError( "No coordinate specified" );
-	s.c.clear();
+	s.a.clear();
     }
 
     return s;

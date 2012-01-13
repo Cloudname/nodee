@@ -28,14 +28,14 @@ public:
     string startupScript() const;
     string shutdownScript() const;
 
-    bool valid() const { return !c.empty(); }
+    bool valid() const { return !a.empty(); }
 
     void setError( const string & );
     string error() const;
 
 private:
     string e;
-    string c;
+    string url;
     int p;
     int eim;
     int epm;
@@ -43,6 +43,7 @@ private:
     string su;
     string sd;
     string a;
+    string c;
 };
 
 
