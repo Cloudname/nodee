@@ -30,7 +30,8 @@ static string filename( const boost::filesystem::directory_iterator & i )
 }
 
 
-set<int> inPasswd( bool gid, const char * filename ) {
+set<int> inPasswd( bool gid, const char * filename )
+{
     set<int> passwd;
 
     ifstream p( filename );
