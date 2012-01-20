@@ -370,32 +370,6 @@ BOOST_AUTO_TEST_CASE( ReadProcUids )
     BOOST_CHECK( g.find( 60000 ) == g.end() );
 }
 
-#include "conf.h"
-
-BOOST_AUTO_TEST_CASE( ArtefactBlah )
-{
-    Conf::depots["foo"] = "http://foo.example.com/barb/";
-    Conf::depots["fumble"] = "http://mumble.exemplo.com.br/stumble/";
-    
-    BOOST_CHECK_EQUAL( Conf::url( "foo:bar:1.0" ),
-		       "http://foo.example.com/barb/bar:1.0" );
-    BOOST_CHECK_EQUAL( Conf::url( "fumble:sex:1.0" ),
-		       "http://mumble.exemplo.com.br/stumble/sex:1.0" );
-
-    Conf::basedir = "/base";
-    Conf::artefactdir = "a";
-
-    BOOST_CHECK_EQUAL( Conf::filename( "foo:bar:1.0" ),
-		       "/base/a/bar:1.0" );
-    BOOST_CHECK_EQUAL( Conf::filename( "fumble:sex:1.0" ),
-		       "/base/a/sex:1.0" );
-
-    // check that the sanity checks check sanity
-    BOOST_CHECK_EQUAL( Conf::filename( "a:b:c:d" ), "" );
-    BOOST_CHECK_EQUAL( Conf::filename( "a:b" ), "" );
-    BOOST_CHECK_EQUAL( Conf::filename( "foo:/etc/passwd:1.0" ), "" );
-}
-
 
 #include "hoststatus.h"
 

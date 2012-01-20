@@ -4,6 +4,8 @@
 #define SERVERSPEC_H
 
 #include <string>
+#include <boost/property_tree/ptree.hpp>
+
 
 
 using namespace std;
@@ -15,6 +17,7 @@ public:
     ServerSpec();
 
     static ServerSpec parseJson( const string & );
+    string json() const;
 
     string coordinate() const;
     string artifact() const;
@@ -28,22 +31,14 @@ public:
     string startupScript() const;
     string shutdownScript() const;
 
-    bool valid() const { return !a.empty(); }
+    bool valid() const;
 
     void setError( const string & );
     string error() const;
 
 private:
+    ::boost::property_tree::ptree pt;
     string e;
-    string url;
-    int p;
-    int eim;
-    int epm;
-    int v;
-    string su;
-    string sd;
-    string a;
-    string c;
 };
 
 

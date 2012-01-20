@@ -7,6 +7,7 @@
 
 #include "serverspec.h"
 #include "conf.h"
+#include "port.h"
 
 
 
@@ -23,6 +24,7 @@
     {
   "coordinate" : "1.idee-prod.ideeuser.ie",
   "artifact" : "com.telenor:id-server:1.4.2",
+  "filename" : "id-server-1.4.2-shaded.jar",
   "options" : {
     "--someoption" : "some value",
     "--anotheroption" : "more config"
@@ -42,7 +44,6 @@
 */
 
 ServerSpec::ServerSpec()
-    : p( 0 ), eim( 0 ), epm(  0), v( 0 )
 {
     // nothing more needed
 }
@@ -58,65 +59,70 @@ ServerSpec ServerSpec::parseJson( const string & specification )
 
     ServerSpec s;
 
-    ptree pt;
+    // parse
     try {
 	istringstream i( specification );
-	read_json( i, pt );
+	read_json( i, s.pt );
     } catch ( boost::property_tree::json_parser::json_parser_error e ) {
+	s.pt = ptree();
 	return s;
     }
 
+    // add default settings. this is too much work, really.
     try {
-	s.a = pt.get<std::string>( "artefact" );
-	s.url = pt.get<std::string>( "url" );
-	s.p = pt.get<int>( "port", 0 );
-	s.eim = pt.get<int>( "typicalram", 0 );
-	s.epm = pt.get<int>( "peakram", 0 );
-	s.v = pt.get<int>( "value", 0 );
-	s.su = pt.get<string>( "startupscript", "" );
-	s.sd = pt.get<string>( "shutdownscript", "" );
-    } catch ( boost::property_tree::ptree_bad_data e ) {
-	s.a.clear();
-	s.setError( "Parse error" );
+	int p = s.pt.get<int>( "port" );
+    } catch ( boost::property_tree::ptree_bad_data ) {
+	// this is a really bad error. we'll leave it in, and valid()
+	// will return false.
+    } catch ( boost::property_tree::ptree_bad_path ) {
+	// the path isn't bad, it's just an unassigned node. bad
+	// exception naming there. we make up a port.
+	s.pt.put( "port", Port::assignFree() );
+    }
+
+    // verify validity and clear the object if necessary
+    if ( s.valid() ) {
+	s.pt = ptree();
 	return s;
     }
 
-    if ( s.a.empty() ) {
-	s.setError( "No artifact specified" );
-	s.a.clear();
-    } else if ( Conf::url( s.a ).empty() ) {
-	s.setError( "Unable to find a repository for artifact " + s.a );
-	s.a.clear();
-    } else if ( Conf::filename( s.a ).empty() ) {
-	s.setError( "Unable to construct a file name for artifact " + s.a );
-	s.a.clear();
-    } else if ( s.c.empty() ) {
-	s.setError( "No coordinate specified" );
-	s.a.clear();
-    }
+    // anything more? no?
 
     return s;
 }
 
 
-/*! Returns the coordinate set by parseJson(), typically a string like
-    http://www.example.com/mumble/stumble.tar.gz
+/*! Returns a json object corresponding to this ServerSpec. If this
+    object is !valid(), then the return value is "{}".
+*/
 
-    If this is an empty string, then parseJson() didn't like its input
-    at all.
+string ServerSpec::json() const
+{
+    ostringstream os;
+    write_json( os, pt, false );
+    return os.str();
+}
+
+
+/*! Returns the coordinate set by parseJson(), typically a string like
+    1.foobar.i.example.com.
+
+    Returns an empty string if the object is not valid().
 */
 
 string ServerSpec::coordinate() const
 {
-    return c;
+    return pt.get<string>( "coordinate" );
 }
 
 
-/*! Returns the port specified in JSON, or 0 if none was specified. */
+/*! Returns the port specified in JSON, or the random number picked at
+    read time was specified.
+*/
 
 int ServerSpec::port() const
 {
-    return p;
+    return pt.get<int>( "port" );
 }
 
 
@@ -126,7 +132,7 @@ int ServerSpec::port() const
 
 int ServerSpec::expectedTypicalMemory() const
 {
-    return eim;
+    return pt.get<int>( "expectedram", 0 );
 }
 
 
@@ -136,7 +142,7 @@ int ServerSpec::expectedTypicalMemory() const
 
 int ServerSpec::expectedPeakMemory() const
 {
-    return epm;
+    return pt.get<int>( "expectedpeakram", 0 );
 }
 
 
@@ -148,7 +154,7 @@ int ServerSpec::expectedPeakMemory() const
 
 int ServerSpec::value() const
 {
-    return v;
+    return pt.get<int>( "value", 0 );
 }
 
 
@@ -161,7 +167,7 @@ int ServerSpec::value() const
 
 string ServerSpec::startupScript() const
 {
-    return su;
+    return pt.get<string>( "startupscript", "" );
 }
 
 
@@ -174,7 +180,7 @@ string ServerSpec::startupScript() const
 
 string ServerSpec::shutdownScript() const
 {
-    return sd;
+    return pt.get<string>( "shutdownscript", "" );
 }
 
 
@@ -184,7 +190,7 @@ string ServerSpec::shutdownScript() const
 
 string ServerSpec::artifact() const
 {
-    return a;
+    return pt.get<string>( "artifact" );
 }
 
 
@@ -194,7 +200,7 @@ string ServerSpec::artifact() const
 
 string ServerSpec::artifactUrl() const
 {
-    return Conf::url( a );
+    return pt.get<string>( "url" );
 }
 
 
@@ -204,7 +210,7 @@ string ServerSpec::artifactUrl() const
 
 string ServerSpec::artifactFilename() const
 {
-    return Conf::filename( a );
+    return pt.get<string>( "filename" );
 }
 
 
@@ -225,4 +231,31 @@ void ServerSpec::setError( const string & error )
 string ServerSpec::error() const
 {
     return e;
+}
+
+
+/*! Returns true if the ServerSpec is valid and usable, and false if
+    there is any kind of error, e.g. port being a string or artifact
+    not being supplied. Throws absolutely no exceptions.
+*/
+
+bool ServerSpec::valid() const
+{
+    try {
+	(void)pt.get<int>( "expectedpeakram", 0 );
+	(void)pt.get<int>( "expectedram", 0 );
+	int p = pt.get<int>( "port" );
+	if ( p < 1 || p > 65535 )
+	    return false;
+	(void)pt.get<int>( "value", 0 );
+	(void)pt.get<string>( "artifact" );
+	(void)pt.get<string>( "coordinate" );
+	(void)pt.get<string>( "filename" );
+	(void)pt.get<string>( "shutdownscript", "" );
+	(void)pt.get<string>( "startupscript", "" );
+	(void)pt.get<string>( "url" );
+    } catch ( ... ) {
+	return false;
+    }
+    return true;
 }

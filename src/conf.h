@@ -21,7 +21,7 @@ public:
     static string artefactdir;
     static string zk;
     
-    static string url( const string & );
+    static string url( const string &, const string & );
     static string filename( const string & );
 };
 
