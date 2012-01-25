@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE( ScanProcesses )
     Process mg2;
     mg2.fakefork( 200 );
     i.manage( mg2 );
-    
+
     makeFakeProc();
 
     x.scanProcesses( "/tmp/uglehack", 42 );
@@ -304,7 +304,17 @@ BOOST_AUTO_TEST_CASE( ServiceList )
 
     i.manage( p1 );
 
-    BOOST_CHECK_EQUAL( Service::list( i ), "{\"services\":{\"100\":{\"value\":\"0\",\"rss\":\"100\",\"recentfaults\":\"29\"}}}\n" );
+    BOOST_CHECK_EQUAL( Service::list( i ), "{\n"
+		       "    \"services\":\n"
+		       "    {\n"
+		       "        \"100\":\n"
+		       "        {\n"
+		       "            \"value\": \"0\",\n"
+		       "            \"rss\": \"100\",\n"
+		       "            \"recentfaults\": \"29\"\n"
+		       "        }\n"
+		       "    }\n"
+		       "}\n" );
 }
 
 
