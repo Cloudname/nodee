@@ -25,7 +25,7 @@ static string filename( const boost::filesystem::directory_iterator & i )
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 3
     return i->path().native();
 #else
-    return p.filename();
+    return p->filename();
 #endif
 }
 
@@ -41,9 +41,9 @@ set<int> inPasswd( bool gid, const char * filename )
 	getline( p, line );
 	if ( !line.empty() ) {
 	    boost::tokenizer<boost::char_separator<char> > t( line, x );
-	    boost::tokenizer<boost::char_separator<char> >::iterator i 
+	    boost::tokenizer<boost::char_separator<char> >::iterator i
 		= t.begin();
-	    boost::tokenizer<boost::char_separator<char> >::iterator e 
+	    boost::tokenizer<boost::char_separator<char> >::iterator e
 		= t.end();
 	    // i points to the user name
 	    ++i; // now i points to the password
@@ -72,7 +72,7 @@ set<int> inProc( bool gid, const char * proc ) {
     set<int> r;
 
     typedef boost::tokenizer<boost::char_separator<char> > bt;
-	
+
     try {
 	boost::char_separator<char> sep( ":" );
 	boost::char_separator<char> tab( "\t" );
@@ -100,7 +100,7 @@ set<int> inProc( bool gid, const char * proc ) {
 			    // to avoid all of them, so we can just
 			    // slurp them in and ignore all the
 			    // details.
-			    bt v( *i, tab ); 
+			    bt v( *i, tab );
 			    bt::iterator ti = v.begin();
 			    while ( ti != v.end() ) {
 				try {
