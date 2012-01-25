@@ -99,7 +99,7 @@ ServerSpec ServerSpec::parseJson( const string & specification )
 string ServerSpec::json() const
 {
     ostringstream os;
-    write_json( os, pt, false );
+    write_json( os, pt );
     return os.str();
 }
 
@@ -161,7 +161,7 @@ int ServerSpec::value() const
 /*! Returns the path to the server's startup script, relative to the
     server's own root. Typically this will be something like
     scripts/startup.sh, although it may be anything.
-    
+
     Returns an empty string if none has been set.
 */
 
@@ -174,7 +174,7 @@ string ServerSpec::startupScript() const
 /*! Returns the path to the server's shutdowbn script, relative to the
     server's own root. Typically this will be something like
     scripts/shutdown.sh, although it may be anything.
-    
+
     Returns an empty string if none has been set.
 */
 
