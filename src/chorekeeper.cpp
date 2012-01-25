@@ -70,7 +70,7 @@ void ChoreKeeper::start()
 		    ::kill( jesus.pid(), 9 );
 		    // come to think of it, should we use
 		    // Process::stop()?
-		
+
 		    // but once that's done, we record that we're NOT
 		    // thrashing, since it's quite likely that even
 		    // after we've killed a process, others will need
@@ -197,7 +197,7 @@ void ChoreKeeper::readProcVmstat( const char * fileName,
 	getline( vmstat, line );
 	if ( !line.empty() ) {
 	    boost::tokenizer<boost::char_separator<char> > t( line, space );
-	    boost::tokenizer<boost::char_separator<char> >::iterator i 
+	    boost::tokenizer<boost::char_separator<char> >::iterator i
 		= t.begin();
 	    string n = *i;
 	    ++i;
@@ -300,7 +300,7 @@ static string filename( const boost::filesystem::directory_iterator & i )
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 3
     return i->path().native();
 #else
-    return p.filename();
+    return i.filename();
 #endif
 }
 
