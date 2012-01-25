@@ -35,7 +35,7 @@ std::string Service::list( Init & init )
 
     hack & pl = init.processes(); // compiler protest at this line
     hack::iterator m( pl.begin() );
-    
+
     string prefix = "services." + boost::lexical_cast<string>( m->pid() );
 
     while ( m != pl.end() ) {
@@ -45,7 +45,7 @@ std::string Service::list( Init & init )
 	++m;
     }
 
-    write_json( os, pt, false );
+    write_json( os, pt );
 
     return os.str();
 }

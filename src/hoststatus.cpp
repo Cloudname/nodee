@@ -31,7 +31,7 @@ HostStatus::HostStatus()
     ostringstream os;
 
     ptree pt;
-    
+
     char tmp[1025];
     tmp[1024] = 0;
     ::gethostname( tmp, 1024 );
@@ -45,7 +45,7 @@ HostStatus::HostStatus()
     pt.put( prefix + ".available", available );
     pt.put( prefix + ".cores", cores( "/proc/cpuinfo" ) );
 
-    write_json( os, pt, false );
+    write_json( os, pt );
 
     j = os.str();
 }
@@ -61,7 +61,7 @@ HostStatus::operator string() const
 
 /*! Parses \a filename as though it were /proc/cpuinfo and returns the
     number of cores.
- 
+
     /proc/cpuinfo also contains much other information, but I don't
     want to use it. Some we don't want to depend on, some we might
     want to use, but it changes. For instance, my desktop currently
@@ -81,7 +81,7 @@ int HostStatus::cores( const char * filename )
 	if ( !line.empty() ) {
 	    if ( line.substr( 0, 9 ) == "processor" ) {
 		boost::tokenizer<boost::char_separator<char> > t( line, sep );
-		boost::tokenizer<boost::char_separator<char> >::iterator i 
+		boost::tokenizer<boost::char_separator<char> >::iterator i
 		    = t.begin();
 		++i;
 		int v = boost::lexical_cast<int>( *i );
@@ -115,7 +115,7 @@ void HostStatus::readProcMeminfo( const char * filename,
 	getline( meminfo, line );
 	if ( !line.empty() ) {
 	    boost::tokenizer<boost::char_separator<char> > t( line, col );
-	    boost::tokenizer<boost::char_separator<char> >::iterator i 
+	    boost::tokenizer<boost::char_separator<char> >::iterator i
 		= t.begin();
 	    string n = *i;
 	    ++i;
