@@ -79,7 +79,9 @@ set<int> inProc( bool gid, const char * proc ) {
 	directory_iterator i = directory_iterator( p );
 	while ( i != directory_iterator() ) {
 	    if ( *filename( i ).rbegin() <= '9' && is_directory( p ) ) {
-		string x = filename( i );
+		string x = proc;
+		x.append( "/" );
+		x.append( filename( i ) );
 		x.append( "/status" );
 		ifstream status( x.data() );
 		while ( status ) {

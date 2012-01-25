@@ -300,7 +300,7 @@ static string filename( const boost::filesystem::directory_iterator & i )
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 3
     return i->path().native();
 #else
-    return i->filename();
+    return i->fapth().filename();
 #endif
 }
 
@@ -324,7 +324,9 @@ void ChoreKeeper::scanProcesses( const char * proc, int me )
 	directory_iterator i = directory_iterator( p );
 	while ( i != directory_iterator() ) {
 	    if ( *filename( i ).rbegin() <= '9' && is_directory( p ) ) {
-		string x = filename( i );
+		string x = proc;
+		x.append( "/" );
+		x.append( filename( i ) );
 		x.append( "/stat" );
 		ifstream stat( x.data() );
 		string line;
