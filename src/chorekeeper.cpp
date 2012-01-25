@@ -300,7 +300,7 @@ static string filename( const boost::filesystem::directory_iterator & i )
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 3
     return i->path().native();
 #else
-    return i->fapth().filename();
+    return i->filename();
 #endif
 }
 
