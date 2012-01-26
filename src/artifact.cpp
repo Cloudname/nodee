@@ -24,21 +24,12 @@ using boost::property_tree::ptree;
    wrapper is needed to get a filename from an iterator.
 */
 
-static string filename( const boost::filesystem::directory_iterator & i )
+static string filename( const vector<path>::const_iterator & i )
 {
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 3
-    return i->path().filename().native();
+    return i->filename().native();
 #else
     return i->filename();
-#endif
-}
-
-static string fullname( const boost::filesystem::directory_iterator & i )
-{
-#if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 3
-    return i->path().string();
-#else
-    return i->string();
 #endif
 }
 
@@ -53,15 +44,22 @@ string Artifact::list()
 {
     ostringstream os;
     ptree pt;
+    
+    vector<path> sorted;
 
-    directory_iterator i = directory_iterator( Conf::artefactdir );
+    copy( directory_iterator( Conf::artefactdir ),
+	  directory_iterator(),
+	  back_inserter( sorted ) );
+    sort( sorted.begin(), sorted.end() );
+
+    vector<path>::const_iterator i = sorted.begin();
     int n = 1;
-    while ( i != directory_iterator() ) {
+    while ( i != sorted.end() ) {
 	if ( is_regular_file( *i ) ) {
 	    pt.put( boost::lexical_cast<string>( n ), filename( i ) );
-	    ++i;
 	    n++;
 	}
+	++i;
     }
 
     write_json( os, pt );
