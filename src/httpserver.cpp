@@ -5,6 +5,7 @@
 #include "hoststatus.h"
 #include "serverspec.h"
 #include "service.h"
+#include "artifact.h"
 #include "process.h"
 
 #include <stdio.h>
@@ -300,7 +301,7 @@ void HttpServer::respond()
     if ( p == "/artifact/list" ) {
 	string o( httpResponse( 200, "application/json",
 				"Artifact list follows" ) );
-	o.append( Service::list( init ) );
+	o.append( Artifact::list() );
 	send( o );
     }
 

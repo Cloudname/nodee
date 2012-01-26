@@ -1,5 +1,4 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
-
 #ifndef SERVICE_H
 #define SERVICE_H
 

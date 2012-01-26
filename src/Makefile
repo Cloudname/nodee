@@ -10,7 +10,7 @@ dropprivileges: dropprivileges.c
 
 OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
 	process.o serverspec.o service.o uid.o script.o conf.o \
-	hoststatus.o port.o
+	hoststatus.o port.o artifact.o
 
 .cpp.o: Makefile
 	${COMPILER} -g -c -o $@ -O0 $<

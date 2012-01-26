@@ -323,10 +323,8 @@ void ChoreKeeper::scanProcesses( const char * proc, int me )
 
 	directory_iterator i = directory_iterator( p );
 	while ( i != directory_iterator() ) {
-	    if ( *filename( i ).rbegin() <= '9' && is_directory( p ) ) {
-		string x = proc;
-		x.append( "/" );
-		x.append( filename( i ) );
+	    if ( *filename( i ).rbegin() <= '9' ) {
+		string x = filename( i );
 		x.append( "/stat" );
 		ifstream stat( x.data() );
 		string line;

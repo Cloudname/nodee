@@ -462,3 +462,22 @@ BOOST_AUTO_TEST_CASE( FreePorts ) {
     BOOST_CHECK( taken.find( 110 ) == taken.end() );
     BOOST_CHECK( taken.find( 112 ) == taken.end() );
 }
+
+
+#include "artifact.h"
+#include "conf.h"
+
+
+BOOST_AUTO_TEST_CASE( ArtifactLister )
+{
+    makeFakeProc();
+    Conf::artefactdir = "/tmp/uglehack/1";
+
+    BOOST_CHECK_EQUAL( Artifact::list(),
+		       "{\n"
+		       "    \"1\": \"stat\",\n"
+		       "    \"2\": \"status\"\n"
+		       "}\n" );
+}
+
+
