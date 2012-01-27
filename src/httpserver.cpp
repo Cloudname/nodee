@@ -242,6 +242,7 @@ void HttpServer::respond()
 	} else {
 	    Process::launch( s, init );
 	    send( httpResponse( 200, "application/json",
+				"Will launch, or try to",
 				s.json() ) );
 	}
 	return;
