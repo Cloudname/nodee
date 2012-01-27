@@ -71,17 +71,12 @@ ServerSpec ServerSpec::parseJson( const string & specification )
     // add default settings. this is too much work, really.
     try {
 	int p = s.pt.get<int>( "port" );
-    } catch ( boost::property_tree::ptree_bad_data ) {
-	// this is a really bad error. we'll leave it in, and valid()
-	// will return false.
-    } catch ( boost::property_tree::ptree_bad_path ) {
-	// the path isn't bad, it's just an unassigned node. bad
-	// exception naming there. we make up a port.
+    } catch ( ... ) {
 	s.pt.put( "port", Port::assignFree() );
     }
 
     // verify validity and clear the object if necessary
-    if ( s.valid() ) {
+    if ( !s.valid() ) {
 	s.pt = ptree();
 	return s;
     }
@@ -306,4 +301,6 @@ bool ServerSpec::valid()
 	setError( "Problem regarding url" );
 	return false;
     }
+
+    return true;
 }
