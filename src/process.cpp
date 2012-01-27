@@ -90,15 +90,19 @@ void Process::handleExit( int status, int signal )
 
 void Process::start()
 {
+    if ( ::getpid() == mp )
+	return;
+    
     string script = s.startupScript();
-    if ( script.empty() ) {
+    if ( script[0] == '/' ) {
+	// nothing needed, it's an absolute path
+    } else if ( script.empty() ) {
 	script = root() + "/scripts/startup";
     } else {
 	script = root() + "/" + script;
     }
     ::execvp( script.c_str(), 0 );
-    if ( ::getpid() != mp )
-	::exit( EX_NOINPUT );
+    ::exit( EX_NOINPUT );
 }
 
 
@@ -128,7 +132,7 @@ void Process::launch( const ServerSpec & what, Init & init )
     // but we change the prelimiaries so they'll do their chores
     // instead of trying to start the real thing
     download.s.setStartupScript( Conf::scriptdir + "/download" );
-    download.s.setStartupScript( Conf::scriptdir + "/install" );
+    install.s.setStartupScript( Conf::scriptdir + "/install" );
 
     // all three are managed by init. close your eyes and don't notice
     // the gruesome hack.
