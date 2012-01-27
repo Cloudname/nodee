@@ -31,7 +31,7 @@ public:
     string startupScript() const;
     string shutdownScript() const;
 
-    bool valid() const;
+    bool valid();
 
     void setError( const string & );
     string error() const;

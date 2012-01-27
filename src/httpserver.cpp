@@ -235,10 +235,11 @@ void HttpServer::respond()
     if ( o == Post && p == "/service/start" ) {
 	ServerSpec s = ServerSpec::parseJson( b );
 	if ( !s.valid() ) {
-	    send( httpResponse( 400, "text/plain",
-				"Parse error for the JSON body" ) );
+	    string e = s.error();
+	    if ( e.empty() )
+		e = "Parse error for the JSON body";
+	    send( httpResponse( 400, "text/plain", e ) );
 	} else {
-
 	    Process::launch( s, init );
 	    send( httpResponse( 200, "text/plain",
 				"Will launch, or try to" ) );

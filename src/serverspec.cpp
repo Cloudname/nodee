@@ -21,7 +21,7 @@
     makes it available to the user of this class.
 
 
-    {
+{
   "coordinate" : "1.idee-prod.ideeuser.ie",
   "artifact" : "com.telenor:id-server:1.4.2",
   "filename" : "id-server-1.4.2-shaded.jar",
@@ -239,23 +239,71 @@ string ServerSpec::error() const
     not being supplied. Throws absolutely no exceptions.
 */
 
-bool ServerSpec::valid() const
+bool ServerSpec::valid()
 {
     try {
 	(void)pt.get<int>( "expectedpeakram", 0 );
-	(void)pt.get<int>( "expectedram", 0 );
-	int p = pt.get<int>( "port" );
-	if ( p < 1 || p > 65535 )
-	    return false;
-	(void)pt.get<int>( "value", 0 );
-	(void)pt.get<string>( "artifact" );
-	(void)pt.get<string>( "coordinate" );
-	(void)pt.get<string>( "filename" );
-	(void)pt.get<string>( "shutdownscript", "" );
-	(void)pt.get<string>( "startupscript", "" );
-	(void)pt.get<string>( "url" );
     } catch ( ... ) {
+	setError( "Problem regarding expectedpeakram" );
 	return false;
     }
-    return true;
+    try {
+	(void)pt.get<int>( "expectedram", 0 );
+    } catch ( ... ) {
+	setError( "Problem regarding expectedram" );
+	return false;
+    }
+    int p = 1;
+    try {
+	p = pt.get<int>( "port" );
+    } catch ( ... ) {
+	setError( "Problem regarding port" );
+	return false;
+    }
+    if ( p < 1 || p > 65535 ) {
+	setError( "Port must be 1-65535" );
+	return false;
+    }
+    try {
+	(void)pt.get<int>( "value", 0 );
+    } catch ( ... ) {
+	setError( "Problem regarding value" );
+	return false;
+    }
+    try {
+	(void)pt.get<string>( "artifact" );
+    } catch ( ... ) {
+	setError( "Problem regarding artifact" );
+	return false;
+    }
+    try {
+	(void)pt.get<string>( "coordinate" );
+    } catch ( ... ) {
+	setError( "Problem regarding coordinate" );
+	return false;
+    }
+    try {
+	(void)pt.get<string>( "filename" );
+    } catch ( ... ) {
+	setError( "Problem regarding filename" );
+	return false;
+    }
+    try {
+	(void)pt.get<string>( "shutdownscript", "" );
+    } catch ( ... ) {
+	setError( "Problem regarding " );
+	return false;
+    }
+    try {
+	(void)pt.get<string>( "startupscript", "" );
+    } catch ( ... ) {
+	setError( "Problem regarding " );
+	return false;
+    }
+    try {
+	(void)pt.get<string>( "url" );
+    } catch ( ... ) {
+	setError( "Problem regarding url" );
+	return false;
+    }
 }
