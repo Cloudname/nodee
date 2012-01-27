@@ -228,7 +228,7 @@ void HttpServer::respond()
 	send( httpResponse( 400, "text/plain", "Utterly total parse error" ) );
 	return;
     }
-    
+
     // start, stop, list services
     // install, uninstall, list artifacts
 
@@ -238,7 +238,7 @@ void HttpServer::respond()
 	    send( httpResponse( 400, "text/plain",
 				"Parse error for the JSON body" ) );
 	} else {
-	    
+
 	    Process::launch( s, init );
 	    send( httpResponse( 200, "text/plain",
 				"Will launch, or try to" ) );
@@ -279,7 +279,7 @@ void HttpServer::respond()
 	string artifact = p.substr( 21 );
 	// ARNT
 	send( httpResponse( 200, "text/plain",
-				"Will uninstall, or try to" ) );
+			    "Will uninstall, or try to" ) );
 	return;
     }
 
@@ -291,65 +291,53 @@ void HttpServer::respond()
 
     // it's Get
 
-    if ( p == "/service/list" ) {
-	string o( httpResponse( 200, "application/json",
-				"Service list follows" ) );
-	o.append( Service::list( init ) );
-	send( o );
-    }
+    if ( p == "/service/list" )
+	send( httpResponse( 200, "application/json",
+			    "Service list follows",
+			    Service::list( init ) ) );
 
-    if ( p == "/artifact/list" ) {
-	string o( httpResponse( 200, "application/json",
-				"Artifact list follows" ) );
-	o.append( Artifact::list() );
-	send( o );
-    }
+    if ( p == "/artifact/list" )
+	send( httpResponse( 200, "application/json",
+			    "Artifact list follows",
+			    Artifact::list() ) );
 
-    if ( p == "/nodee/status" ) {
-	string o( httpResponse( 200, "application/json",
-				"Let me tell you how I feel" ) );
-	o.append( (string)HostStatus() );
-	send( o );
-    }
+    if ( p == "/nodee/status" )
+	send( httpResponse( 200, "application/json",
+			    "Let me tell you how I feel",
+			    HostStatus() ) );
 
-    if ( p == "/" ) {
-	string r = httpResponse( 200, "text/html",
-				 "This is not a web site" );
-	r += "<html>"
-	     "<head><title>Nodee</title><head>"
-	     "<body style='text-align: center;'>"
-	     "<h1>Nodee</h1>"
-	     "<p>This is the home page of a nodee server. "
-	     "There are no web pages to see here, only a few JSON "
-	     "API things, and those aren't really something you'll "
-	     "want to look at, if you understand."
-	     "<p>Have a look at the "
-	     "<a href=\"http://cloudname.org\">Cloudname</a> "
-	     "home page or perhaps the "
-	     "<a href=\"https://github.com/Cloudname/nodee\">Nodee source</a> "
-	     "instead, that'll be much more fun."
-	     "<p><img src=\"http://rant.gulbrandsen.priv.no/images/under-construction.gif\">"
-	     "</body>"
-	     "</html>\n";
-	send( r );
-    }
-    
-    if ( p == "/robots.txt" ) {
-	string r = httpResponse( 200, "text/plain",
-				 "This is not a web site" );
-	r += "User-Agent: *\r\nDisallow: /\r\n";
-	send( r );
-    }
-    
-    if ( p == "/sitemap.xml" ) {
-	string r = httpResponse( 200, "application/xml",
-				 "This is not a web site" );
-	r += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-	     "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n"
-	     "</urlset nicetry=true>\n";
-	send( r );
-    }
-    
+    if ( p == "/" )
+	send( httpResponse( 200, "text/html",
+			    "This is not a web site",
+			    "<html>"
+			    "<head><title>Nodee</title><head>"
+			    "<body style='text-align: center;'>"
+			    "<h1>Nodee</h1>"
+			    "<p>This is the home page of a nodee server. "
+			    "There are no web pages to see here, only a few JSON "
+			    "API things, and those aren't really something you'll "
+			    "want to look at, if you understand."
+			    "<p>Have a look at the "
+			    "<a href=\"http://cloudname.org\">Cloudname</a> "
+			    "home page or perhaps the "
+			    "<a href=\"https://github.com/Cloudname/nodee\">Nodee source</a> "
+			    "instead, that'll be much more fun."
+			    "<p><img src=\"http://rant.gulbrandsen.priv.no/images/under-construction.gif\">"
+			    "</body>"
+			    "</html>\n" ) );
+
+    if ( p == "/robots.txt" )
+	send( httpResponse( 200, "text/plain",
+			    "This is not a web site",
+			    "User-Agent: *\r\nDisallow: /\r\n" ) );
+
+    if ( p == "/sitemap.xml" )
+	send( httpResponse( 200, "application/xml",
+			    "This is not a web site",
+			    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			    "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n"
+			    "</urlset nicetry=true>\n" ) );
+
     send( httpResponse( 404, "text/plain", "No such page" ) );
 }
 
@@ -371,9 +359,10 @@ void HttpServer::close()
 */
 
 string HttpServer::httpResponse( int numeric, const string & contentType,
-				 const string & textual )
+				 const string & textual,
+				 const string & body )
 {
-    string r;
+    string r = "HTTP/1.0 ";
     // we blithely assume that 100<=numeric<=999
     r += boost::lexical_cast<string>( numeric );
     r += " ";
@@ -383,7 +372,15 @@ string HttpServer::httpResponse( int numeric, const string & contentType,
 	 "Server: nodee\r\n"
 	 "Content-Type: ";
     r += contentType;
+    if ( !body.empty() ) {
+	r += "\r\n"
+	     "Content-Length: ";
+	r += boost::lexical_cast<string>( body.length() );
+    }
     r += "\r\n\r\n";
+    if ( !body.empty() ) {
+	r += body;
+    }
     return r;
 }
 

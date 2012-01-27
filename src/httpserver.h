@@ -34,7 +34,8 @@ public:
     void respond();
     void send( string );
 
-    string httpResponse( int, const string &, const string & );
+    string httpResponse( int, const string &, const string &,
+			 const string & = "" );
 
     void close();
 

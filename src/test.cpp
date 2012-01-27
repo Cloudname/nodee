@@ -36,19 +36,19 @@ BOOST_AUTO_TEST_CASE( HttpResponse )
     HttpServer x( 0, i );
 
     BOOST_CHECK_EQUAL( x.httpResponse( 100, "text/plain", "foo" ),
-		       "100 foo\r\n"
+		       "HTTP/1.0 100 foo\r\n"
 		       "Connection: close\r\n"
 		       "Server: nodee\r\n"
 		       "Content-Type: text/plain\r\n\r\n" );
 
     BOOST_CHECK_EQUAL( x.httpResponse( 200, "text/html", "OK" ),
-		       "200 OK\r\n"
+		       "HTTP/1.0 200 OK\r\n"
 		       "Connection: close\r\n"
 		       "Server: nodee\r\n"
 		       "Content-Type: text/html\r\n\r\n" );
 
     BOOST_CHECK_EQUAL( x.httpResponse( 404, "text/plain", "No!" ),
-		       "404 No!\r\n"
+		       "HTTP/1.0 404 No!\r\n"
 		       "Connection: close\r\n"
 		       "Server: nodee\r\n"
 		       "Content-Type: text/plain\r\n\r\n" );
