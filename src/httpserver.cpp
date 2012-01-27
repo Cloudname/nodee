@@ -241,8 +241,8 @@ void HttpServer::respond()
 	    send( httpResponse( 400, "text/plain", e ) );
 	} else {
 	    Process::launch( s, init );
-	    send( httpResponse( 200, "text/plain",
-				"Will launch, or try to" ) );
+	    send( httpResponse( 200, "application/json",
+				s.json() ) );
 	}
 	return;
     }
