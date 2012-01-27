@@ -9,7 +9,7 @@ dropprivileges: dropprivileges.c
 	${COMPILER} -o dropprivileges $(CFLAGS) dropprivileges.c
 
 OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
-	process.o serverspec.o service.o uid.o script.o conf.o \
+	process.o serverspec.o service.o uid.o conf.o \
 	hoststatus.o port.o artifact.o
 
 .cpp.o: Makefile
