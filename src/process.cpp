@@ -32,9 +32,9 @@
 */
 
 Process::Process()
-    : p( 0 ),
+    : p( 0 ), mp( ::getpid() ),
       faults( 0 ), prevFaults( 0 ),
-      rss( 0 )
+      rss( 0 ),
 {
 }
 
@@ -53,7 +53,7 @@ void Process::fork()
 	// an error. record the problem somehow, then just return.
 	p = 0;
 	return;
-    } else if ( p == 0 ) {
+    } else if ( tmp == 0 ) {
 	// we're in the child.
 
 	// the setregid and setreuid calls will return failure if
@@ -97,8 +97,9 @@ void Process::start()
 	script = root() + "/" + script;
     }
     ::execvp( script.c_str(), 0 );
-    ::exit( EX_NOINPUT );
-}	
+    if ( ::getpid() != mp )
+	::exit( EX_NOINPUT );
+}
 
 
 
@@ -120,7 +121,7 @@ void Process::launch( const ServerSpec & what, Init & init )
 /*! Constructs a copy of \a other. Deep copy, no sharing. */
 
 Process::Process( const Process & other )
-    : p( other.p ), s( other.s ),
+    : p( other.p ), mp( other.mp), s( other.s ),
       faults( other.faults ),
       prevFaults( other.prevFaults ),
       rss( other.rss )
@@ -130,13 +131,14 @@ Process::Process( const Process & other )
 
 /*! Constructs a Process without any ServerSpec and with uid() \a uid
     and gid() \a gid.
-  
+
     This is a helper for Script, which needs to start() using those
     IDs.
 */
 
 Process::Process( int uid, int gid )
-    : p( 0 ), faults( 0 ), prevFaults( 0 ),
+    : p( 0 ), mp( ::getpid() ),
+      faults( 0 ), prevFaults( 0 ),
       rss( 0 ), u( uid ), g( gid )
 {
 }

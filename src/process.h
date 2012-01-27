@@ -48,6 +48,7 @@ public:
 
 private:
     int p;
+    int mp;
     ServerSpec s;
     int faults;
     int prevFaults;
