@@ -55,6 +55,7 @@ private:
     int rss;
     int u;
     int g;
+    Process * next;
 };
 
 

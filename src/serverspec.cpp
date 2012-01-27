@@ -304,3 +304,13 @@ bool ServerSpec::valid()
 
     return true;
 }
+
+
+/*! Writes \a s as startupscript on the ServerSpec. No sanity checking
+    is performed.
+*/
+
+void ServerSpec::setStartupScript( const string & s )
+{
+    pt.put( "startupscript", s );
+}

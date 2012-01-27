@@ -28,6 +28,8 @@ public:
     int expectedPeakMemory() const;
     int value() const;
 
+    void setStartupScript( const string & );
+
     string startupScript() const;
     string shutdownScript() const;
 

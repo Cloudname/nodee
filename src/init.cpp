@@ -86,11 +86,14 @@ std::list<Process> & Init::processes()
 
 /*! Starts managing \a p. This is a copy operation; the managed object
     is not yours.
+
+    Returns a pointer to the copied object.
 */
 
-void Init::manage( Process p )
+Process * Init::manage( Process p )
 {
     l.push_back( p );
+    return &*l.rbegin();
 }
 
 

@@ -34,7 +34,7 @@
 Process::Process()
     : p( 0 ), mp( ::getpid() ),
       faults( 0 ), prevFaults( 0 ),
-      rss( 0 )
+      rss( 0 ), next( 0 )
 {
 }
 
@@ -73,9 +73,6 @@ void Process::fork()
 
 /*! Notifies this object that it's process is gone, and how.
 
-    The default implementation does nothing; a subclass may need to
-    e.g. create a follow-on Process.
-
     Init will delete the Process after calling this.
 */
 
@@ -83,6 +80,9 @@ void Process::handleExit( int status, int signal )
 {
     status = status;
     signal = signal;
+
+    if ( next )
+	next->fork();
 }
 
 
@@ -110,21 +110,43 @@ void Process::start()
 
 void Process::launch( const ServerSpec & what, Init & init )
 {
-    Process p;
+    // we have three processes: A useful process and two preliminary
+    // chores (I only just managed to avoid the word foreplay, oops,
+    // it snuck its way in, I'll be more disciplined from now on)
+    Process useful;
+    useful.assignUidGid();
 
-    p.s = what;
-    init.manage( p );
-    p.fork();
+    // we chain the three so they're run in sequence
+    Process install( useful );
+    Process download( install );
+
+    // each of them receive basically the same spec
+    useful.s = what;
+    download.s = what;
+    install.s = what;
+
+    // but we change the prelimiaries so they'll do their chores
+    // instead of trying to start the real thing
+    download.s.setStartupScript( Conf::scriptdir + "/download" );
+    download.s.setStartupScript( Conf::scriptdir + "/install" );
+
+    // all three are managed by init. close your eyes and don't notice
+    // the gruesome hack.
+    download.next = init.manage( useful );
+    install.next = init.manage( download );
+    init.manage( install )->fork();
 }
 
 
 /*! Constructs a copy of \a other. Deep copy, no sharing. */
 
 Process::Process( const Process & other )
-    : p( other.p ), mp( other.mp), s( other.s ),
+    : p( other.p ), mp( other.mp ), s( other.s ),
       faults( other.faults ),
       prevFaults( other.prevFaults ),
-      rss( other.rss )
+      rss( other.rss ),
+      u( other.u ), g( other.g ),
+      next( other.next )
 {
 }
 
@@ -139,7 +161,8 @@ Process::Process( const Process & other )
 Process::Process( int uid, int gid )
     : p( 0 ), mp( ::getpid() ),
       faults( 0 ), prevFaults( 0 ),
-      rss( 0 ), u( uid ), g( gid )
+      rss( 0 ), u( uid ), g( gid ),
+      next( 0 )
 {
 }
 
