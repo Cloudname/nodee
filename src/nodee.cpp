@@ -110,6 +110,8 @@ int main( int argc, char ** argv )
 	exit( 0 );
     }
 
+    Conf::scriptdir = "/usr/local/nodee/scripts";
+
     Init i;
 
     HttpListener h6( HttpListener::V6, port, i );
