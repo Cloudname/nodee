@@ -34,7 +34,7 @@
 Process::Process()
     : p( 0 ), mp( ::getpid() ),
       faults( 0 ), prevFaults( 0 ),
-      rss( 0 ),
+      rss( 0 )
 {
 }
 
