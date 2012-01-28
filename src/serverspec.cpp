@@ -180,12 +180,16 @@ string ServerSpec::shutdownScript() const
 
 
 /*! Returns the specified artifact, typically a string such as
- comoyo:nodee:1.0.0.
- */
+    comoyo:nodee:1.0.0.
+*/
 
 string ServerSpec::artifact() const
 {
-    return pt.get<string>( "artifact" );
+    try {
+	return pt.get<string>( "artifact" );
+    } catch ( ... ) {
+	return pt.get<string>( "artefact" );
+    }
 }
 
 
@@ -268,8 +272,12 @@ bool ServerSpec::valid()
     try {
 	(void)pt.get<string>( "artifact" );
     } catch ( ... ) {
-	setError( "Problem regarding artifact" );
-	return false;
+	try {
+	    (void)pt.get<string>( "artefact" );
+	} catch ( ... ) {
+	    setError( "Problem regarding artifact" );
+	    return false;
+	}
     }
     try {
 	(void)pt.get<string>( "coordinate" );
