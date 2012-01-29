@@ -3,7 +3,9 @@
 #ifndef SERVERSPEC_H
 #define SERVERSPEC_H
 
+#include <map>
 #include <string>
+
 #include <boost/property_tree/ptree.hpp>
 
 
@@ -32,6 +34,8 @@ public:
 
     string startupScript() const;
     string shutdownScript() const;
+
+    map<string,string> startupOptions();
 
     bool valid();
 

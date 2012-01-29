@@ -322,3 +322,31 @@ void ServerSpec::setStartupScript( const string & s )
 {
     pt.put( "startupscript", s );
 }
+
+
+/*! Returns a map containing all the startup options specified; the
+    map may be empty.
+
+    This forces all startup command lines to be independent of order,
+    and options cannot be repeated. OK.
+*/
+
+map<string,string> ServerSpec::startupOptions()
+{
+    map<string,string> r;
+    using boost::property_tree::ptree;
+    ptree::const_assoc_iterator i;
+
+    try {
+	ptree options = pt.get_child( "options" );
+	ptree::const_iterator i = options.begin();
+	while ( i != options.end() ) {
+	    r[i->first] = i->second.data();
+	    ++i;
+	}
+    } catch ( ... ) {
+	setError( "Error using supplied options" );
+    }
+
+    return r;
+}

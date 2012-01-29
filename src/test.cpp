@@ -481,3 +481,37 @@ BOOST_AUTO_TEST_CASE( ArtifactLister )
 }
 
 
+#include "serverspec.h"
+
+// I feel a need to record the following error message, which g++ gave me
+// when I stupidly attempted to use pt::const_assoc_iterator as if it were
+// the std kind of iterator
+
+// serverspec.cpp:349:23: error: no match for ‘operator=’ in ‘r.std::map<_Key, _Tp, _Compare, _Alloc>::operator[] [with _Key = std::basic_string<char>, _Tp = std::basic_string<char>, _Compare = std::less<std::basic_string<char> >, _Alloc = std::allocator<std::pair<const std::basic_string<char>, std::basic_string<char> > >, std::map<_Key, _Tp, _Compare, _Alloc>::mapped_type = std::basic_string<char>, std::map<_Key, _Tp, _Compare, _Alloc>::key_type = std::basic_string<char>]((* &((boost::iterator_facade<boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> >::const_assoc_iterator, std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >, boost::bidirectional_traversal_tag, const std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >&, long int>*)(& i))->boost::iterator_facade<I, V, TC, R, D>::operator-> [with Derived = boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> >::const_assoc_iterator, Value = std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >, CategoryOrTraversal = boost::bidirectional_traversal_tag, Reference = const std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >&, Difference = long int, boost::iterator_facade<I, V, TC, R, D>::pointer = const std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >*]()->std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >::first)) = ((boost::iterator_facade<boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> >::const_assoc_iterator, std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >, boost::bidirectional_traversal_tag, const std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >&, long int>*)(& i))->boost::iterator_facade<I, V, TC, R, D>::operator-> [with Derived = boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> >::const_assoc_iterator, Value = std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >, CategoryOrTraversal = boost::bidirectional_traversal_tag, Reference = const std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >&, Difference = long int, boost::iterator_facade<I, V, TC, R, D>::pointer = const std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >*]()->std::pair<const std::basic_string<char>, boost::property_tree::basic_ptree<std::basic_string<char>, std::basic_string<char> > >::second’
+
+// it did make me pause for a moment or two, I don't mind admitting
+
+BOOST_AUTO_TEST_CASE( ServerOptions )
+{
+    ServerSpec s = ServerSpec::parseJson(
+	"{"
+	"  \"coordinate\" : \"1.idee-prod.ideeuser.ie\","
+	"  \"artifact\" : \"com.telenor:id-server:1.4.2\","
+	"  \"filename\" : \"id-server-1.4.2-shaded.jar\","
+	"  \"url\" : \"http://haw-lin.com\","
+	"  \"options\" : {"
+	"    \"--someoption\" : \"some value\","
+	"    \"--anotheroption\" : \"more config\""
+	"  },"
+	"  \"restart\" : {"
+	"    \"period\" : 120,"
+	"    \"maxrestarts\" : 10,"
+	"    \"enabled\" : true"
+	"  }"
+	"}"
+	);
+    BOOST_CHECK( s.valid() );
+    map<string,string> o = s.startupOptions();
+    BOOST_CHECK_EQUAL( o["--someoption"], "some value" );
+    BOOST_CHECK_EQUAL( o["--anotheroption"], "more config" );
+}

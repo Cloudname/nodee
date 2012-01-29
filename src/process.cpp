@@ -101,7 +101,18 @@ void Process::start()
     } else {
 	script = root() + "/" + script;
     }
-    ::execvp( script.c_str(), 0 );
+    char * args[1025];
+    args[0] = const_cast<char*>(script.c_str());
+    int n = 1;
+    map<string,string> o( s.startupOptions() );
+    map<string,string>::iterator i( o.begin() );
+    while ( i != o.end() && n < 1023 ) {
+	args[n++] = const_cast<char*>( i->first.c_str() );
+	args[n++] = const_cast<char*>( i->second.c_str() );
+	++i;
+    }
+    args[n++] = 0;
+    ::execv( script.c_str(), args );
     ::exit( EX_NOINPUT );
 }
 
