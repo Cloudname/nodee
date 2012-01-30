@@ -20,7 +20,7 @@ public:
 
     std::list<Process>& processes();
 
-    Process * manage( Process p );
+    Process * manage( const Process & p );
 
     Process find( int ) const;
 

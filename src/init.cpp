@@ -90,7 +90,7 @@ std::list<Process> & Init::processes()
     Returns a pointer to the copied object.
 */
 
-Process * Init::manage( Process p )
+Process * Init::manage( const Process & p )
 {
     l.push_back( p );
     return &*l.rbegin();
