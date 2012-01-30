@@ -131,9 +131,8 @@ void Process::launch( const ServerSpec & what, Init & init )
     Process useful;
     useful.assignUidGid();
 
-    // we chain the three so they're run in sequence
-    Process install( useful );
-    Process download( install );
+    Process install( useful.u, useful.g )
+    Process download( useful.u, useful.g );
 
     // each of them receive basically the same spec
     useful.s = what;
@@ -142,8 +141,15 @@ void Process::launch( const ServerSpec & what, Init & init )
 
     // but we change the prelimiaries so they'll do their chores
     // instead of trying to start the real thing
-    download.s.setStartupScript( Conf::scriptdir + "/download" );
-    install.s.setStartupScript( Conf::scriptdir + "/install" );
+    map options;
+    options["--url"] = what.url();
+    options["--filename"] = what.filename();
+    download.s.setStartupScript( Conf::scriptdir + "/download", options );
+    options.erase( "--url" );
+    options["--uid"] = boost::lexical_cast<string>( useful.u );
+    options["--gid"] = boost::lexical_cast<string>( useful.u );
+    options["--rootdir"] = root();
+    install.s.setStartupScript( Conf::scriptdir + "/install", options );
 
     // all three are managed by init. close your eyes and don't notice
     // the gruesome hack.
