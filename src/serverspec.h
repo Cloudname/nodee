@@ -17,6 +17,7 @@ class ServerSpec
 {
 public:
     ServerSpec();
+    ServerSpec( const ServerSpec & );
 
     static ServerSpec parseJson( const string & );
     string json() const;

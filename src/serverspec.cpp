@@ -351,3 +351,11 @@ map<string,string> ServerSpec::startupOptions()
 {
     return o;
 }
+
+
+/*! Constructs an deep copy of \a other. */
+
+ServerSpec::ServerSpec( const ServerSpec & other )
+    : pt( other.pt ), o( other.o ), e( other.e )
+{
+}
