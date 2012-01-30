@@ -56,6 +56,9 @@ private:
     int u;
     int g;
     Process * next;
+
+    int starts;
+    time_t waitUntil;
 };
 
 

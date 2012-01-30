@@ -69,13 +69,14 @@ void Init::check()
 	++i;
     if ( i != l.end() && i->pid() == pid ) {
 	i->handleExit( exitStatus, signal );
-	l.remove( *i );
+	if ( !i->pid() )
+	    l.remove( *i );
     }
 }
 
 
 /*! Returns a reference to Init's list of managed processes. Callers
-    should not change the list, but may changed the included objects.
+    should not change the list, but may change the included objects.
 */
 
 std::list<Process> & Init::processes()

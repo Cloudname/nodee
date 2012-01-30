@@ -34,7 +34,8 @@
 Process::Process()
     : p( 0 ), mp( ::getpid() ),
       faults( 0 ), prevFaults( 0 ),
-      rss( 0 ), next( 0 )
+      rss( 0 ), next( 0 ),
+      starts( 0 ), waitUntil( 0 )
 {
 }
 
@@ -47,6 +48,9 @@ void Process::fork()
 {
     if ( p )
 	return;
+
+    time_t now = time( 0 );
+    starts++;
 
     int tmp = ::fork();
     if ( tmp < 0 ) {
@@ -63,10 +67,13 @@ void Process::fork()
 	    (void)::setregid( g, g );
 	if ( u )
 	    (void)::setreuid( u, u );
+	if ( now < waitUntil )
+	    ::sleep( waitUntil - now );
 	start();
     } else {
 	// we're in the parent.
 	p = tmp;
+	waitUntil = now + s.restartPeriod();
     }
 }
 
@@ -81,8 +88,12 @@ void Process::handleExit( int status, int signal )
     status = status;
     signal = signal;
 
+    p = 0;
+
     if ( next )
 	next->fork();
+    else if ( starts < s.maxRestarts() )
+        fork();
 }
 
 
@@ -167,7 +178,8 @@ Process::Process( const Process & other )
       prevFaults( other.prevFaults ),
       rss( other.rss ),
       u( other.u ), g( other.g ),
-      next( other.next )
+      next( other.next ),
+      starts( other.starts ), waitUntil( other.waitUntil )
 {
 }
 
@@ -183,7 +195,8 @@ Process::Process( int uid, int gid )
     : p( 0 ), mp( ::getpid() ),
       faults( 0 ), prevFaults( 0 ),
       rss( 0 ), u( uid ), g( gid ),
-      next( 0 )
+      next( 0 ),
+      starts( 0 ), waitUntil( 0 )
 {
 }
 
@@ -195,6 +208,9 @@ void Process::operator=( const Process & other )
     faults = other.faults;
     prevFaults = other.prevFaults;
     rss = other.rss;
+    next = other.next;
+    starts = other.starts;
+    waitUntil = other.waitUntil;
 }
 
 

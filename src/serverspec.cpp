@@ -135,6 +135,27 @@ int ServerSpec::port() const
 }
 
 
+/*! Returns the minimum number of seconds between restarts of this
+    service, which is 0 by default.
+*/
+
+int ServerSpec::restartPeriod() const
+{
+    return pt.get<int>( "restart.period", 0 );
+}
+
+
+/*! Returns the maximum number of times this service may be restarted,
+    which is 0 by default (ie. the service may be started, but never
+    restarted).
+*/
+
+int ServerSpec::maxRestarts() const
+{
+    return pt.get<int>( "restart.maxrestarts", 0 );
+}
+
+
 /*! Returns the expected typical memory consumption of the server in
     kilobytes, or 0 if none was specified.
 */

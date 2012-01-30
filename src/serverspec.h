@@ -30,6 +30,8 @@ public:
     int expectedTypicalMemory() const;
     int expectedPeakMemory() const;
     int value() const;
+    int restartPeriod() const;
+    int maxRestarts() const;
 
     void setStartupScript( const string &, const map<string,string> & );
 
