@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# options:
+#  --url url        the full URL to download. may includ login/password
+#  --filename file  filename, starting with /
+
+while $(echo $1 | grep -q '^--') ; do
+  case "$1" in
+    --url) url=$2; shift ; shift ;;
+    --filename) fn=$2; shift ; shift ;;
+    *) echo unknown option $1 ; exit 1 ;;
+  esac
+done
+
+[ -n "$url" ] || { echo URL not specified; exit 1; }
+[ -n "$fn" ] || { echo Filename not specified; exit 1; }
+
+# try to download, three times, at intervals
+[ -e $fn ] || wget -O $fn $url
+[ -e $fn ] || ( sleep 5 ; wget -O $fn $url )
+[ -e $fn ] || ( sleep 15 ; wget -O $fn $url )
