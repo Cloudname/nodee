@@ -30,7 +30,7 @@ public:
     int expectedPeakMemory() const;
     int value() const;
 
-    void setStartupScript( const string & );
+    void setStartupScript( const string &, const map<string,string> & );
 
     string startupScript() const;
     string shutdownScript() const;
@@ -44,6 +44,7 @@ public:
 
 private:
     ::boost::property_tree::ptree pt;
+    map<string,string> o;
     string e;
 };
 

@@ -81,7 +81,21 @@ ServerSpec ServerSpec::parseJson( const string & specification )
 	return s;
     }
 
-    // anything more? no?
+    // options are copied to a separate map, since I don't feel like
+    // experimenting to find out how to remove things from ptree.
+
+    ptree::const_assoc_iterator i;
+
+    try {
+	ptree options = s.pt.get_child( "options" );
+	ptree::const_iterator i = options.begin();
+	while ( i != options.end() ) {
+	    s.o[i->first] = i->second.data();
+	    ++i;
+	}
+    } catch ( ... ) {
+	s.setError( "Error using supplied options" );
+    }
 
     return s;
 }
@@ -318,9 +332,11 @@ bool ServerSpec::valid()
     is performed.
 */
 
-void ServerSpec::setStartupScript( const string & s )
+void ServerSpec::setStartupScript( const string & script,
+				   const map<string,string> & options )
 {
-    pt.put( "startupscript", s );
+    pt.put( "startupscript", script );
+    o = options;
 }
 
 
@@ -333,20 +349,5 @@ void ServerSpec::setStartupScript( const string & s )
 
 map<string,string> ServerSpec::startupOptions()
 {
-    map<string,string> r;
-    using boost::property_tree::ptree;
-    ptree::const_assoc_iterator i;
-
-    try {
-	ptree options = pt.get_child( "options" );
-	ptree::const_iterator i = options.begin();
-	while ( i != options.end() ) {
-	    r[i->first] = i->second.data();
-	    ++i;
-	}
-    } catch ( ... ) {
-	setError( "Error using supplied options" );
-    }
-
-    return r;
+    return o;
 }

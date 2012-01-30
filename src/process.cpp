@@ -131,7 +131,7 @@ void Process::launch( const ServerSpec & what, Init & init )
     Process useful;
     useful.assignUidGid();
 
-    Process install( useful.u, useful.g )
+    Process install( useful.u, useful.g );
     Process download( useful.u, useful.g );
 
     // each of them receive basically the same spec
@@ -141,14 +141,14 @@ void Process::launch( const ServerSpec & what, Init & init )
 
     // but we change the prelimiaries so they'll do their chores
     // instead of trying to start the real thing
-    map options;
-    options["--url"] = what.url();
-    options["--filename"] = what.filename();
+    map<string,string> options;
+    options["--url"] = what.artifactUrl();
+    options["--filename"] = what.artifactFilename();
     download.s.setStartupScript( Conf::scriptdir + "/download", options );
     options.erase( "--url" );
     options["--uid"] = boost::lexical_cast<string>( useful.u );
     options["--gid"] = boost::lexical_cast<string>( useful.u );
-    options["--rootdir"] = root();
+    options["--rootdir"] = useful.root();
     install.s.setStartupScript( Conf::scriptdir + "/install", options );
 
     // all three are managed by init. close your eyes and don't notice
