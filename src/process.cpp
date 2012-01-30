@@ -268,6 +268,8 @@ void Process::stop()
     if ( !valid() )
 	return;
 
+    starts = INT_MAX;
+
     string script = s.shutdownScript();
     if ( script.empty() ) {
 	::kill( 9, p );
