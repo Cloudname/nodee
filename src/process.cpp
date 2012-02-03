@@ -103,7 +103,7 @@ void Process::start()
 {
     if ( ::getpid() == mp )
 	return;
-    
+
     string script = s.startupScript();
     if ( script[0] == '/' ) {
 	// nothing needed, it's an absolute path
@@ -155,8 +155,11 @@ void Process::launch( const ServerSpec & what, Init & init )
     map<string,string> options;
     options["--url"] = what.artifactUrl();
     options["--filename"] = what.artifactFilename();
+    if ( !what.md5().empty() )
+	options["--md5"] = what.md5();
     download.s.setStartupScript( Conf::scriptdir + "/download", options );
     options.erase( "--url" );
+    options.erase( "--md5" );
     options["--uid"] = boost::lexical_cast<string>( useful.u );
     options["--gid"] = boost::lexical_cast<string>( useful.u );
     options["--rootdir"] = useful.root();

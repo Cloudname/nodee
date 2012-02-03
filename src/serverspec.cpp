@@ -25,6 +25,7 @@
   "coordinate" : "1.idee-prod.ideeuser.ie",
   "artifact" : "com.telenor:id-server:1.4.2",
   "filename" : "id-server-1.4.2-shaded.jar",
+  "md5" : "2c6ca63c97c04c821613f1251643c3bb",
   "options" : {
     "--someoption" : "some value",
     "--anotheroption" : "more config"
@@ -379,4 +380,14 @@ map<string,string> ServerSpec::startupOptions()
 ServerSpec::ServerSpec( const ServerSpec & other )
     : pt( other.pt ), o( other.o ), e( other.e )
 {
+}
+
+
+/*! Returns the MD5 sum specified, or an empty string if none is
+    specified.
+*/
+
+int ServerSpec::md5() const
+{
+    return pt.get<string>( "md5", "" );
 }
