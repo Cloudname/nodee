@@ -324,3 +324,19 @@ string Process::root() const
     return Conf::basedir + "/" + Conf::workdir + "/" + s.coordinate() +
 	boost::lexical_cast<string>( s.port() );
 }
+
+
+/*! Returns a reference to the ServerSpec that motivates the existence
+    of this Process.
+    
+    Note that the download, install and payload process have mostly
+    identical ServerSpec instances. This is a either feature or a bug,
+    depending on what you want it to happen or not happen. I lean
+    towards regarding it as a feature, since download is motivated by
+    the ServerSpec and should be accounted as such.
+*/
+
+const ServerSpec & Process::spec() const
+{
+    return s;
+}

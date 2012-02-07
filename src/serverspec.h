@@ -32,6 +32,7 @@ public:
     int value() const;
     int restartPeriod() const;
     int maxRestarts() const;
+    string md5() const;
 
     void setStartupScript( const string &, const map<string,string> & );
 

@@ -20,8 +20,8 @@
     Users generally submit this in JSON, this class parses it and
     makes it available to the user of this class.
 
-
-{
+    Here's a json example (not very nicely formatted, but json parsers
+    don't care and neither do I, so don't bother complaining): {
   "coordinate" : "1.idee-prod.ideeuser.ie",
   "artifact" : "com.telenor:id-server:1.4.2",
   "filename" : "id-server-1.4.2-shaded.jar",
@@ -32,11 +32,12 @@
   },
   "restart" : {
     "period" : 120,
-    "maxrestarts" : 10,
-    "enabled" : true
+    "maxrestarts" : 10
   }
 }
 
+    Note that you cannot specify any single option twice. -foo 1 --foo
+    2 is not possible; nodee will use one of the two.
 */
 
 
@@ -387,7 +388,7 @@ ServerSpec::ServerSpec( const ServerSpec & other )
     specified.
 */
 
-int ServerSpec::md5() const
+string ServerSpec::md5() const
 {
     return pt.get<string>( "md5", "" );
 }

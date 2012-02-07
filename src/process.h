@@ -46,6 +46,8 @@ public:
     void setRoot( const string & );
     string root() const;
 
+    const ServerSpec & spec() const;
+
 private:
     int p;
     int mp;

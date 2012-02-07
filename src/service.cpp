@@ -39,6 +39,21 @@ std::string Service::list( Init & init )
     string prefix = "services." + boost::lexical_cast<string>( m->pid() );
 
     while ( m != pl.end() ) {
+	try {
+	    pt.put( prefix + ".coordinate", m->spec().coordinate() );
+	} catch ( ... ) {
+	    // if no coordinate is specified, we just don't emit any
+	}
+	try {
+	    pt.put( prefix + ".port", m->spec().port() );
+	} catch ( ... ) {
+	    // ditto port
+	}
+	try {
+	    pt.put( prefix + ".artifact", m->spec().artifact() );
+	} catch ( ... ) {
+	    // not emitting artifact is a bit shady, though
+	}
 	pt.put( prefix + ".value", m->value() );
 	pt.put( prefix + ".rss", m->currentRss() );
 	pt.put( prefix + ".recentfaults", m->recentPageFaults() );
