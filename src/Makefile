@@ -10,21 +10,22 @@ dropprivileges: dropprivileges.c
 
 OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
 	process.o serverspec.o service.o uid.o conf.o \
-	hoststatus.o port.o artifact.o
+	hoststatus.o port.o artifact.o zkclient.o
 
 .cpp.o: Makefile
 	${COMPILER} -g -c -o $@ -O0 $<
 
 ifeq ($(shell ./platform.sh), oneiric)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_system \
-		-lboost_program_options
+		-lboost_program_options -lzookeeper_mt
 endif
 ifeq ($(shell ./platform.sh), lucid)
-BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options
+BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options \
+		-lzookeeper_mt
 endif
 
 nodee: ${OBJECTS} nodee.o Makefile
-	${COMPILER} -g -o nodee -pthread ${OBJECTS} nodee.o ${BOOSTLIBS}
+	${COMPILER} -g -o nodee -pthread ${OBJECTS} nodee.o ${BOOSTLIBS} 
 
 clean:
 	-rm nodee nodeetest dropprivileges *.o
