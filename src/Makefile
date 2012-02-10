@@ -12,20 +12,19 @@ OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
 	process.o serverspec.o service.o uid.o conf.o \
 	hoststatus.o port.o artifact.o zkclient.o
 
-.cpp.o: Makefile sanelucid
-	${COMPILER} -g -c -o $@ -O0 $<
-
-sanelucid:
-	[ !-d /usr/include/zookeeper && -d /usr/include/c-client-src ] && ln -sf /usr/include/c-client-src zookeeper
-
 ifeq ($(shell ./platform.sh), oneiric)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_system \
 		-lboost_program_options -lzookeeper_mt
+ZKINCLUDE=-I/usr/include/c-client-src
 endif
 ifeq ($(shell ./platform.sh), lucid)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options \
 		-lzookeeper_mt
+ZKINCLUDE=-I/usr/include/zookeeper
 endif
+
+.cpp.o: Makefile
+	${COMPILER} ${ZKINCLUDE} -g -c -o $@ -O0 $<
 
 nodee: ${OBJECTS} nodee.o Makefile
 	${COMPILER} -g -o nodee -pthread ${OBJECTS} nodee.o ${BOOSTLIBS} 
