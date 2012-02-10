@@ -77,7 +77,8 @@ The --workdir flag specifies where (relative to the base directory)
 .B nodee
 creates working directories for running services.
 .PP
-The --zookeeper flag specifies where to locate zookeeper.
+The --zookeeper flag specifies where to locate zookeeper, in the same
+format as Zookeeer uses, for instance 192.0.2.8:3000,192.0.2.72:3000.
 .SH HTTP API
 .B Nodee
 serves seven URLs: Three to start/stop/list running services, three to
@@ -116,13 +117,16 @@ lists the locally stored artefacts as a simple JSON array/list.
 .B /nodee/status
 returns a few key numbers describing the host's status.
 .PP
-The JSON contents are not yet documented. TBD.
+The JSON contents are not yet documented (or quite stable). TBD.
 .PP
 In addition to the seven API calls,
 .B nodee
 serves a few more URLs using invariant responses. For instance,
 /robots.txt tells any passing bots to stay away from the "site". These
 are not meant to be used and their exact contents may change.
+.PP
+Some of these API calls will probably change, so that a subset of the
+API becomes RESTful.
 .SH CONFIGURATION FILE
 .BR Nodee's
 configuration file uses the classic line-oriented format:
@@ -135,7 +139,7 @@ port=40
 basedir=/opt/foo
 .in -4
 .PP
-All command-line options except --config and --help also exist as
+All command-line options (except --config and --help) also exist as
 configuration file options.
 .SH DIAGNOSTICS
 The return code of
