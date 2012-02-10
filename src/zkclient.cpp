@@ -109,7 +109,7 @@ ZkClient::ZkClient( const std::string & server )
 	break;
     case ZNONODE: // the parent node does not exist.
 	// this uses cerr, not log, since it may be presumed to happen
-	// before we have logging
+	// before we have logging and never happens after startup
 	cerr << "nodee: zk: Could not create " << path
 	     << " (parent node deos not exist)" << endl;
 	::exit( EX_UNAVAILABLE );

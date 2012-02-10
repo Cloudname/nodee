@@ -1,5 +1,6 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -109,6 +110,11 @@ int main( int argc, char ** argv )
 	cout << cli << endl;
 	exit( 0 );
     }
+
+    if ( geteuid() )
+	cerr << "Nodee: Running as non-root. "
+	        "All services will use the same UID as nodee."
+	     << endl;
 
     Conf::scriptdir = "/usr/local/nodee/scripts";
 

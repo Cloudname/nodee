@@ -310,8 +310,13 @@ int Process::gid() const
 
 void Process::assignUidGid()
 {
-    u = chooseFreeUid();
-    g = chooseFreeGid();
+    if ( getuid() ) {
+	u = ::geteuid();
+	g = ::getegid();
+    } else {
+	u = chooseFreeUid();
+	g = chooseFreeGid();
+    }
 }
 
 
@@ -328,7 +333,7 @@ string Process::root() const
 
 /*! Returns a reference to the ServerSpec that motivates the existence
     of this Process.
-    
+
     Note that the download, install and payload process have mostly
     identical ServerSpec instances. This is a either feature or a bug,
     depending on what you want it to happen or not happen. I lean
