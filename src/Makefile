@@ -15,12 +15,12 @@ OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
 ifeq ($(shell ./platform.sh), oneiric)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_system \
 		-lboost_program_options -lzookeeper_mt
-ZKINCLUDE=-I/usr/include/c-client-src
+ZKINCLUDE=-I/usr/include/zookeeper
 endif
 ifeq ($(shell ./platform.sh), lucid)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options \
 		-lzookeeper_mt
-ZKINCLUDE=-I/usr/include/zookeeper
+ZKINCLUDE=-I/usr/include/c-client-src
 endif
 
 .cpp.o: Makefile

@@ -5,7 +5,7 @@
 
 #include "process.h"
 
-#include <zookeeper/zookeeper.h> // sigh
+#include <zookeeper.h> // sigh
 
 
 class ZkClient: public Process
