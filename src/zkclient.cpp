@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include <iostream>
+
 #include <unistd.h> // gethostname()
 
 using namespace std;
@@ -37,8 +39,10 @@ static void watcher( zhandle_t * zzh,
 
 
 
-/*!  Constructs an empty
-
+/*!  Constructs a Zookeeper client which will connect to zookepper and
+     update an ephemereal node every two minutes.
+     
+     This constructor succeeds or calls exit().
 */
 
 ZkClient::ZkClient( const std::string & server )
@@ -104,6 +108,8 @@ ZkClient::ZkClient( const std::string & server )
     case ZOK: // operation completed successfully
 	break;
     case ZNONODE: // the parent node does not exist.
+	// this uses cerr, not log, since it may be presumed to happen
+	// before we have logging
 	cerr << "nodee: zk: Could not create " << path
 	     << " (parent node deos not exist)" << endl;
 	::exit( EX_UNAVAILABLE );
