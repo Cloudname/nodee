@@ -6,6 +6,7 @@
 
 #include "httplistener.h"
 #include "chorekeeper.h"
+#include "zkclient.h"
 #include "init.h"
 #include "conf.h"
 
@@ -117,6 +118,8 @@ int main( int argc, char ** argv )
 	     << endl;
 
     Conf::scriptdir = "/usr/local/nodee/scripts";
+
+    ZkClient zk( Conf::zk );
 
     Init i;
 
