@@ -37,6 +37,30 @@ static void watcher( zhandle_t * zzh,
 }
 
 
+/*! \class ZkClient zkclient.h
+
+    The ZkClient is Nodee's Zookeeper client class; its responsibility
+    is to ensure that Zookeeper always sees an open TCP connection to
+    this Nodee intance and that Nodee's ephemeral node contains
+    reasonably accurate infornmation about the host's status.
+
+    ZkClient uses two threads: One to write to Zookeeper when we need
+    to do update the ephemeral node, and one to listen in case
+    Zookeeper tells us anything. The latter is enforced by Zookeeper's
+    C library. There's also some locking in the source that may not
+    suit us too well, but the zookeeper C API authors didn't ask us.
+
+    The class offers very API: Create an object, the two threads
+    appear, invisibly to you, and ZkClient goes off to do its thing.
+    It will kill Nodee if it is unable to keep Zookeeper updated for a
+    prolonged period (details rather fluid).
+
+    Note that if ZkClient kills Nodee too soon, a Zookeeper restart
+    may cause the entire cluster to reboot, as Nodee's reboot watcher
+    reboots the host. If that were to happen on same host that runs
+    Zookeeper and Nodee starts up more quickly, we might never again
+    reach a functioning state.
+*/
 
 
 /*!  Constructs a Zookeeper client which will connect to zookepper and
