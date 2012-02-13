@@ -10,7 +10,13 @@
 
 /*! \class Init init.h
 
-  The Init class manages all the subprocesses. Nothing to it, really.
+    The Init class manages all the subprocesses.
+
+    This is the core of Nodee: When a service needs to be started,
+    eventually a Process will be created and handed over to Init for
+    management. Init will be happy as long as nothing happens, and
+    when the process (lowercase) exits, Init notices and informs the
+    Process, so that the Process can take appropriate action.
 */
 
 
@@ -47,12 +53,11 @@ void Init::check()
     int status;
     int pid = ::wait( &status );
 
-    if ( pid < 0 ) {
-	// an error. what to do. exit nodee?
-    }
-
-    if ( pid <= 0 )
+    if ( pid <= 0 ) {
+	// we have no children to wait for.
+	::sleep( 2 );
 	return;
+    }
 
     // we now have a pid. find out what happened to it.
     int exitStatus = -1;
