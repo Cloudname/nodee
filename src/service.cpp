@@ -65,7 +65,7 @@ std::string Service::list( Init & init )
 	} catch ( ... ) {
 	    // not emitting artifact is a bit shady, though
 	}
-	pt.put( prefix + ".value", m->value() );
+	pt.put( prefix + ".value", m->spec().value() );
 	pt.put( prefix + ".rss", m->currentRss() );
 	pt.put( prefix + ".recentfaults", m->recentPageFaults() );
 	++m;
