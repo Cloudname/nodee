@@ -51,7 +51,7 @@ ServerSpec::ServerSpec()
 }
 
 
-/*! Parses a json specification and sets up an object. If the parsing
+/*! Parses a json \a specification and sets up an object. If the parsing
     failed, the object's coordinate() will be a null string afterwards.
 */
 

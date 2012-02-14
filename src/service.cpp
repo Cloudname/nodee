@@ -25,6 +25,17 @@ using boost::property_tree::ptree;
 // on aewc-cn-01.
 typedef list<Process> hack;
 
+/*! \class Service service.h
+
+    Service is a tidiness class, a container for independent
+    service-related functions so that they don't need to be global.
+
+    At present list() is the only function. It is possible that
+    functions to install and uninstall services may return, as well as
+    perhaps a function to provide detailed information for monitoring
+    purposes.
+*/
+
 /*! Returns a JSON foo describing the processes managed by \a init. */
 
 std::string Service::list( Init & init )

@@ -103,8 +103,8 @@ Process * Init::manage( const Process & p )
 }
 
 
-/*! Returns a copy of the Process object for \a p, or an invalid
-    Process object if \a p is not the pid of a managed service.
+/*! Returns a copy of the Process object for \a pid, or an invalid
+    Process object if \a pid is not the pid of a managed service.
 */
 
 Process Init::find( int pid ) const

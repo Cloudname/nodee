@@ -34,3 +34,6 @@ clean:
 
 nodeetest: ${OBJECTS} test.o Makefile
 	${COMPILER} -g -o nodeetest -pthread ${OBJECTS} test.o ${BOOSTLIBS}
+
+doc:
+	/home/arnt/bin/udoc -o 'Arnt Gulbrandsen' -u 'http://arnt.gulbrandsen.priv.no' -w /tmp -p /tmp/nodee.ps *.cpp

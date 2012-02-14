@@ -63,10 +63,13 @@ static void watcher( zhandle_t * zzh,
 */
 
 
-/*!  Constructs a Zookeeper client which will connect to zookepper and
-     update an ephemereal node every two minutes.
-     
-     This constructor succeeds or calls exit().
+/*!  Constructs a Zookeeper client which will connect to zookeeper \a
+     server and update an ephemereal node every two minutes.
+
+     \a server is in Zookeeper's usual format
+     (10.0.10.10:3000,10.1.10.10:3000 or similar).
+   
+     This constructor succeeds or aborts the program via ::exit().
 */
 
 ZkClient::ZkClient( const std::string & server )

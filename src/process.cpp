@@ -14,21 +14,42 @@
 #include "uid.h"
 
 
-/*! Constructs a Process to look out for some child process.
+/*! \class Process process.h
+  
+    Constructs a Process to look out for some child process.
 
     The caller manually has to hand ownership over to Init.
+    
+    Most of Process manages information about the process; very few
+    functions can be used to change the process.
 
-    This class never kills or otherwise affects the child process, it
-    merely records information about it, such as the
-    expectedTypicalMemory() and value() of the process. Nodee uses
-    this to adjust the kernel's OOM killer policies, so that if the
-    host runs out of memory, the most likely process killed is a
-    low-value server that occupied lots of RAM.
+    fork() forks and starts the class.  assignUidGid() assigns
+    otherwise unused IDs for the process, so that no two services use
+    the same UID or GID.
 
-    If objects of this class were to own or otherwise act on the
+    setCurrentRss() and setPageFaults() are used by the ChoreKeeper to
+    store information for the later use by the ChoreKeeper itself.
+
+    There's a testing helper called fakefork(), which should never be
+    used in production, and a static function called launch() to
+    launch a new process, including download helpers if necessary.
+    
+    The remaining functions all return information, from pid() and
+    gid() to spec().
+
+    Some implementation notes: This class never kills or otherwise
+    affects the child process, it merely records information about
+    it. If objects of this class were to own or otherwise act on the
     process they mimic, then Init couldn't copy and delete Process
-    objects quite so freely. The ability to treat Process objects
-    as values is central to Nodee's pointerlessness.
+    objects quite so freely. The ability to treat Process objects as
+    values is central to Nodee's pointerlessness.
+*/
+
+/*! Constructs a naked, invalid Process.
+  
+    This is basically not useful. As I write these words I'm not
+    entirely sure why the constructor even exists. Maybe it should
+    become private and die if that causes no problems.
 */
 
 Process::Process()
@@ -80,6 +101,11 @@ void Process::fork()
 
 /*! Notifies this object that it's process is gone, and how.
 
+    \a status is the exit status reported by the process (0 for
+    successful exit) and \a signal is the signal that caused the
+    process to terminate, if any. I assume that the signal is 0 if no
+    signal intervened, but I haven't checked that.
+
     Init will delete the Process after calling this.
 */
 
@@ -129,9 +155,11 @@ void Process::start()
 
 
 
-/*! Launches a new Process based on \a what, managed by \a
- *  init. Returns quickly; the new Process will go on its way.
+/*! Launches a new Process based on \a what, managed by \a init.
+    Returns quickly; the new Process will go on its way.
 
+    This may/will also start some helper processes to download and/or
+    install the software specified by \a what.
 */
 
 void Process::launch( const ServerSpec & what, Init & init )
@@ -233,10 +261,10 @@ int Process::currentRss() const
 
 /*! Records that \a f faults have occured since time immemorial. */
 
-void Process::setPageFaults( int x )
+void Process::setPageFaults( int f )
 {
     prevFaults = faults;
-    faults = x;
+    faults = f;
 }
 
 
@@ -345,3 +373,27 @@ const ServerSpec & Process::spec() const
 {
     return s;
 }
+
+
+/*! Destroys the object. Frees nothing.
+  
+    Exists only because compilers tend to moan and wail if there is no
+    constructor, and I like zero-warning code.
+*/
+
+Process::~Process()
+{
+   
+}
+
+
+/*! \fn int Process::pid() const
+  
+    Returns the Process' unix pid, or 0 if there is no process.
+    
+    There is no process before fork() or after handleExit().
+*/
+
+/*! \fn bool Process::valid() const
+    Returns true if this Process represents a real unix process.
+*/

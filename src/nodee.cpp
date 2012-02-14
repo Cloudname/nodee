@@ -26,6 +26,9 @@
 using namespace boost::program_options;
 
 
+/*! \nodoc */
+
+
 int main( int argc, char ** argv )
 {
     int port;

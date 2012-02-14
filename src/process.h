@@ -12,7 +12,7 @@ public:
     Process();
     Process( const Process & );
     Process( int, int );
-    virtual ~Process() {}
+    virtual ~Process();
 
     int pid() const { return p; }
     bool valid() const { return p > 0; }
@@ -24,10 +24,6 @@ public:
     void fakefork( int fakepid );
 
     void stop();
-
-    int value() const { return s.value(); }
-    int expectedPeakMemory() const { return s.expectedPeakMemory(); }
-    int expectedTypicalMemory() const { return s.expectedTypicalMemory(); }
 
     void setCurrentRss( int );
     int currentRss() const;
