@@ -26,7 +26,7 @@
     creating HttpServers connected to \a i when clients connect.
 */
 
-HttpListener::HttpListener( Family family, int port, Init & i )
+HttpListener::HttpListener( HttpListener::Family family, int port, Init & i )
     : init( i )
 {
     int retcode;
@@ -112,7 +112,7 @@ bool HttpListener::valid() const
 
 /*! boost::thread wants to call start() by this name, so here's a
     wrapper around start().
-*/   
+*/
 
 void HttpListener::operator()()
 {

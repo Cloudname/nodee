@@ -190,8 +190,8 @@ void HttpServer::parseRequest( string h )
 
 /*! Reads a body, for POST.
 
-    On return, either the object will be valid() and the body() set,
-    or the object will not be valid().
+    On return, either body() will be set, or the operation() will be
+    Invalid.
 */
 
 void HttpServer::readBody()
@@ -354,10 +354,11 @@ void HttpServer::close()
 
 
 /*! Returns a HTTP response string with \a numeric status, \a textual
-    explanation and \a contentType.
+    explanation (302 Found, etc), \a contentType and optionally \a
+    body.
 
     This function does most of what send() ought to do, but this is
-    easily testable and the same logic isend() would not be.
+    easily testable and the same logic in send() would not be.
 */
 
 string HttpServer::httpResponse( int numeric, const string & contentType,
@@ -409,9 +410,44 @@ void HttpServer::send( string response )
 
 /*! boost::thread wants to call start() by this name, so here's a
     wrapper around start().
-*/   
+*/
 
 void HttpServer::operator()()
 {
     start();
+}
+
+/*! \fn int HttpServer::contentLength() const
+
+  Returns the content-length supplied by the client, or 0 if the
+  client hasn't specified any particular length.
+*/
+
+/*! \fn Operation HttpServer::operation() const
+
+  Returns the operation specified by the client, or Invalid if there's
+  a parsing problem.
+
+  Only Get and Post are recognized now, because those are the only
+  ones our API uses.
+*/
+
+/*! \fn string HttpServer::path() const
+
+  Returns the path specified by the client, or an empty string in case
+  of parse problems.
+
+  The path is local, ie. it starts with a slash.
+
+  HttpServer does no canonicalization, but also no file system
+  operations. /a/b/../d is NOT the same as /a/d.
+*/
+
+
+/*! Returns the client request body, or an empty string if no body was supplied     or the request hasn't been parsed yet.
+*/
+
+string HttpServer::body() const
+{
+    
 }

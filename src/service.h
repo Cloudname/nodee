@@ -12,7 +12,6 @@ using namespace std;
 class Service
 {
 public:
-    void foo( Init & );
     static string list( Init & );
 };
 

@@ -15,11 +15,11 @@
 
 
 /*! \class Process process.h
-  
+
     Constructs a Process to look out for some child process.
 
     The caller manually has to hand ownership over to Init.
-    
+
     Most of Process manages information about the process; very few
     functions can be used to change the process.
 
@@ -33,7 +33,7 @@
     There's a testing helper called fakefork(), which should never be
     used in production, and a static function called launch() to
     launch a new process, including download helpers if necessary.
-    
+
     The remaining functions all return information, from pid() and
     gid() to spec().
 
@@ -46,10 +46,9 @@
 */
 
 /*! Constructs a naked, invalid Process.
-  
-    This is basically not useful. As I write these words I'm not
-    entirely sure why the constructor even exists. Maybe it should
-    become private and die if that causes no problems.
+
+    This is basically not useful. It's needed to compile (e.g. in
+    ChoreKeeper) and not harmful, that's all.
 */
 
 Process::Process()
@@ -231,6 +230,8 @@ Process::Process( int uid, int gid )
 {
 }
 
+/*! Makes this Process into an exact copy of \a other.
+*/
 
 void Process::operator=( const Process & other )
 {
@@ -376,24 +377,33 @@ const ServerSpec & Process::spec() const
 
 
 /*! Destroys the object. Frees nothing.
-  
+
     Exists only because compilers tend to moan and wail if there is no
     constructor, and I like zero-warning code.
 */
 
 Process::~Process()
 {
-   
+
 }
 
 
 /*! \fn int Process::pid() const
-  
+
     Returns the Process' unix pid, or 0 if there is no process.
-    
+
     There is no process before fork() or after handleExit().
 */
 
 /*! \fn bool Process::valid() const
     Returns true if this Process represents a real unix process.
+*/
+
+
+/*! \fn bool Process::operator==( const Process & other )
+  
+    Returns true if this Process and \a other refer to the same actual
+    process, and false if not.
+
+    This means that all invalid processes are equal. Like it or not.
 */

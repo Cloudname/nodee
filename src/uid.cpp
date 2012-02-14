@@ -13,6 +13,8 @@
 using namespace std;
 using namespace boost::filesystem;
 
+/*! \nodoc */
+
 
 /* ubuntu 10.04 includes boost 1.40, which has boost::filesystem API
    2. 11.10 includes API 3. rather than demand and upgraded or

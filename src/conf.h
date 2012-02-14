@@ -12,6 +12,7 @@ using namespace std;
 class Conf
 {
 public:
+    static void setDefaults();
 
     // boost::po wants to write to variables and I didn't feel like
     // writing setters just for blah, so I made these public.
@@ -21,9 +22,6 @@ public:
     static string workdir;
     static string artefactdir;
     static string zk;
-
-    static string url( const string &, const string & );
-    static string filename( const string & );
 };
 
 

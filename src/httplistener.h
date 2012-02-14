@@ -11,7 +11,7 @@ class HttpListener
 public:
     enum Family { V4, V6 };
 
-    HttpListener( enum Family, int port, Init & );
+    HttpListener( Family f, int port, Init & );
 
     void operator()();
 

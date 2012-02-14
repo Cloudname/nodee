@@ -31,6 +31,8 @@ using namespace boost::program_options;
 
 int main( int argc, char ** argv )
 {
+    Conf::setDefaults();
+
     int port;
     vector<string> depots;
     string cf( CONFFILE );

@@ -34,6 +34,15 @@ static string filename( const vector<path>::const_iterator & i )
 }
 
 
+/*! \class Artifact artifact.h
+
+    The Artifact class is a namespace class to gather various
+    artifact-related functions and keep them from being globals.
+    
+    At the moment list() is the only function.
+*/
+
+
 /*! Returns a json object containing a list of installed artifacts.
     Format to be decided later; I don't think this is useful, so I'll
     just do something and if we turn out to need it, but different,
@@ -44,7 +53,7 @@ string Artifact::list()
 {
     ostringstream os;
     ptree pt;
-    
+
     vector<path> sorted;
 
     copy( directory_iterator( Conf::artefactdir ),

@@ -9,6 +9,8 @@
 
 #include "httpserver.h"
 
+/*! \nodoc */
+
 using namespace std;
 
 BOOST_AUTO_TEST_CASE( HttpParsing )

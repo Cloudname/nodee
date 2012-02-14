@@ -3,7 +3,6 @@
 #include "conf.h"
 
 
-
 /*! \class Conf conf.h
 
     The Conf class is a wrapper for some global variables and two
@@ -21,3 +20,14 @@ string Conf::basedir;
 string Conf::workdir;
 string Conf::artefactdir;
 string Conf::zk;
+
+
+/*! Writes default values into the configuration values. The default
+    values are documented (only) in Nodee's user documentation, not
+    here.
+*/
+
+void Conf::setDefaults()
+{
+    zk = "127.0.0.1:2181";
+}

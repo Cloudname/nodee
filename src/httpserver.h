@@ -16,7 +16,6 @@ public:
     enum Operation { Get, Post, Invalid };
 
     HttpServer( int, Init & );
-    ~HttpServer() {}
 
     void operator()();
 

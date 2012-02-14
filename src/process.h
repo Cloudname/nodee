@@ -39,7 +39,6 @@ public:
     int gid() const;
     void assignUidGid();
 
-    void setRoot( const string & );
     string root() const;
 
     const ServerSpec & spec() const;

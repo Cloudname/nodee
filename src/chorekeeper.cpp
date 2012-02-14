@@ -32,7 +32,8 @@ using namespace std;
 
 
 /*! Constructs a ChoreKeeper. The caller has to call start() to
-    perform chores.
+    perform chores, thereafter the ChoreKeeper will call \a i to
+    obtain a list of processes and perform whatever chores are needed.
 */
 
 ChoreKeeper::ChoreKeeper( Init & i )
@@ -133,6 +134,17 @@ void ChoreKeeper::detectThrashing()
 }
 
 
+/*! Returns true or false depending on whether \a nr_free_pages, \a
+    pgmajfault and \a pgpgout indicate that there may be thrashing.
+
+    The algorithm used is highly heuristic. It's intended to return
+    true a little too often, so ChoreKeeper only takes action if
+    oneBitOfThrashing() returns consistently true for many seconds.
+
+    This function has been separated out from its caller for easier
+    unit testing.
+*/
+
 bool ChoreKeeper::oneBitOfThrashing( int nr_free_pages, int pgmajfault, int pgpgout )
 {
     // heuristic hell here
@@ -221,6 +233,11 @@ void ChoreKeeper::readProcVmstat( const char * fileName,
         }
     }
 }
+
+
+/*! Parses \a line as though it were a /proc/<pid>/stat line, and returns
+    a RunningProcess with all the right fields filled in.
+*/
 
 RunningProcess ChoreKeeper::parseProcStat( string line )
     throw ( boost::bad_lexical_cast )
@@ -379,10 +396,10 @@ Process ChoreKeeper::furthestOverPeak() const
     list<Process> & pl = init.processes();
     list<Process>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	int over = m->currentRss() - m->expectedPeakMemory();
+	int over = m->currentRss() - m->spec().expectedPeakMemory();
 	if ( over > 0 &&
 	     ( !p.valid() ||
-	       over > p.currentRss() - p.expectedPeakMemory() ) )
+	       over > p.currentRss() - p.spec().expectedPeakMemory() ) )
 	    p = *m;
 	++m;
     }
@@ -401,10 +418,10 @@ Process ChoreKeeper::furthestOverExpected() const
     list<Process> & pl = init.processes();
     list<Process>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	int over = m->currentRss() - m->expectedTypicalMemory();
+	int over = m->currentRss() - m->spec().expectedTypicalMemory();
 	if ( over > 0 &&
 	     ( !p.valid() ||
-	       over > p.currentRss() - p.expectedTypicalMemory() ) )
+	       over > p.currentRss() - p.spec().expectedTypicalMemory() ) )
 	    p = *m;
 	++m;
     }
@@ -413,9 +430,9 @@ Process ChoreKeeper::furthestOverExpected() const
 }
 
 
-/*! Scans the Process table and finds the least important
-    process. Returns an invalid Process if none are less important
-    than the most important Process.
+/*! Scans the Process table and finds the least important process.
+    Returns an invalid Process if none are less important than the
+    most important Process.
 */
 
 Process ChoreKeeper::leastValuable() const
@@ -425,13 +442,13 @@ Process ChoreKeeper::leastValuable() const
     list<Process> & pl = init.processes();
     list<Process>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	if ( !max.valid() || max.value() < m->value() )
+	if ( !max.valid() || max.spec().value() < m->spec().value() )
 	    max = *m;
-	if ( !min.valid() || min.value() > m->value() )
+	if ( !min.valid() || min.spec().value() > m->spec().value() )
 	    min = *m;
 	++m;
     }
-    if ( min.valid() && min.value() < max.value() )
+    if ( min.valid() && min.spec().value() < max.spec().value() )
 	return min;
     return Process();
 }

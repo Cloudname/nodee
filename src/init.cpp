@@ -120,9 +120,9 @@ Process Init::find( int pid ) const
 
 /*! boost::thread wants to call start() by this name, so here's a
     wrapper around start().
-*/   
+*/
 
-void ZkClient::operator()()
+void Init::operator()()
 {
     start();
 }
