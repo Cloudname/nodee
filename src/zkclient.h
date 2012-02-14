@@ -13,7 +13,7 @@ class ZkClient: public Process
 public:
     ZkClient( const std::string & server );
 
-    void operator()() { start(); } // what boost::thread wants
+    void operator()();
 
     void start();
 

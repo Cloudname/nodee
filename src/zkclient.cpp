@@ -197,3 +197,13 @@ void ZkClient::start()
 			 -1 );
     }
 }
+
+
+/*! boost::thread wants to call start() by this name, so here's a
+    wrapper around start().
+*/   
+
+void ZkClient::operator()()
+{
+    start();
+}

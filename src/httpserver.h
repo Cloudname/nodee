@@ -18,7 +18,7 @@ public:
     HttpServer( int, Init & );
     ~HttpServer() {}
 
-    void operator()() { start(); }
+    void operator()();
 
     void start();
 

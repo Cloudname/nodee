@@ -13,7 +13,7 @@ public:
     Init();
     ~Init();
 
-    void operator()() { start(); } // what boost::thread wants
+    void operator()();
 
     void start();
     void check();

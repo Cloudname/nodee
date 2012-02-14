@@ -13,7 +13,7 @@ public:
 
     HttpListener( enum Family, int port, Init & );
 
-    void operator()() { start(); } // what boost::thread wants
+    void operator()();
 
     void start();
 

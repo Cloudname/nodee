@@ -108,3 +108,13 @@ bool HttpListener::valid() const
 {
     return f > 1;
 }
+
+
+/*! boost::thread wants to call start() by this name, so here's a
+    wrapper around start().
+*/   
+
+void HttpListener::operator()()
+{
+    start();
+}

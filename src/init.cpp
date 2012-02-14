@@ -116,3 +116,13 @@ Process Init::find( int pid ) const
 	return Process();
     return *i;
 }
+
+
+/*! boost::thread wants to call start() by this name, so here's a
+    wrapper around start().
+*/   
+
+void Init::operator()()
+{
+    start();
+}

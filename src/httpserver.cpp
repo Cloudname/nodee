@@ -405,3 +405,13 @@ void HttpServer::send( string response )
     }
     close();
 }
+
+
+/*! boost::thread wants to call start() by this name, so here's a
+    wrapper around start().
+*/   
+
+void HttpServer::operator()()
+{
+    start();
+}
