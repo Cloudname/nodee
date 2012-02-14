@@ -122,7 +122,7 @@ Process Init::find( int pid ) const
     wrapper around start().
 */   
 
-void Init::operator()()
+void ZkClient::operator()()
 {
     start();
 }
