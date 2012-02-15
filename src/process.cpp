@@ -47,8 +47,8 @@
 
 /*! Constructs a naked, invalid Process.
 
-    This is basically not useful. It's needed to compile (e.g. in
-    ChoreKeeper) and not harmful, that's all.
+    This is basically not useful. It's needed for e.g.
+    ChoreKeeper::biggest(), but can't be really used.
 */
 
 Process::Process()
@@ -401,7 +401,7 @@ Process::~Process()
 
 
 /*! \fn bool Process::operator==( const Process & other )
-  
+
     Returns true if this Process and \a other refer to the same actual
     process, and false if not.
 

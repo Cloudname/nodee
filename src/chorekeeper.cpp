@@ -46,12 +46,12 @@ using namespace std;
     its data.)
 
     ChoreKeeper has several algorithms for deciding which service to
-    kill (furthestOverPeak(), furthestOverExpected(), leastValuable(),
-    thrashingMost() and biggest()). Its algorithms are much better
-    than the kernel's, since we're able to give it better
-    information. For instance, by telling nodee how much RAM a service
-    typically and maximally should use, we're giving nodee a good way
-    to decide which server is using too much memory, and by
+    kill (implemented by furthestOverPeak(), furthestOverExpected(),
+    leastValuable(), thrashingMost() and biggest()). Its algorithms
+    are much better than the kernel's, since we're able to give it
+    better information. For instance, by telling nodee how much RAM a
+    service typically and maximally should use, we're giving nodee a
+    good way to decide which server is using too much memory, and by
     segregating services, we enable nodee to gather data per service,
     not per process.
 
