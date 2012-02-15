@@ -41,8 +41,10 @@ HostStatus::HostStatus()
 
     // do I really want that prefix? no? not sure.
     string prefix = string("hosts.") + tmp;
-    pt.put( prefix + ".totalmemory", total );
-    pt.put( prefix + ".available", available );
+    if ( total )
+	pt.put( prefix + ".totalmemory", total );
+    if ( available )
+	pt.put( prefix + ".available", available );
     pt.put( prefix + ".cores", cores( "/proc/cpuinfo" ) );
 
     write_json( os, pt );
@@ -73,6 +75,7 @@ HostStatus::operator string() const
 int HostStatus::cores( const char * filename )
 {
     int r = 1; // we know we have one, since this line runs
+    try {
     ifstream cpuinfo( filename );
     boost::char_separator<char> sep( ": " );
     while ( cpuinfo ) {
@@ -89,6 +92,11 @@ int HostStatus::cores( const char * filename )
 		    r = v + 1;
 	    }
 	}
+    }
+    } catch( ... ) {
+	// this may fail, in which case we'll contain all exceptions
+	// and just return that we have one core (or several, if the
+	// failure happened after we found the right number of cores).
     }
     return r;
 }
@@ -107,27 +115,31 @@ void HostStatus::readProcMeminfo( const char * filename,
 {
     total = 0;
     available = 0;
-    ifstream meminfo( filename );
-    boost::char_separator<char> col( ":" );
-    boost::char_separator<char> space( " " );
-    while ( meminfo ) {
-	string line;
-	getline( meminfo, line );
-	if ( !line.empty() ) {
-	    boost::tokenizer<boost::char_separator<char> > t( line, col );
-	    boost::tokenizer<boost::char_separator<char> >::iterator i
-		= t.begin();
-	    string n = *i;
-	    ++i;
-	    boost::tokenizer<boost::char_separator<char> > o( *i, space );
-	    try {
-		int v = boost::lexical_cast<int>( *o.begin() );
-		if ( n == "MemTotal" )
-		    total = v;
-		else if ( n == "MemFree" || n == "Inactive" )
-		    available += v;
-	    } catch (  boost::bad_lexical_cast ) {
+    try {
+	ifstream meminfo( filename );
+	boost::char_separator<char> col( ":" );
+	boost::char_separator<char> space( " " );
+	while ( meminfo ) {
+	    string line;
+	    getline( meminfo, line );
+	    if ( !line.empty() ) {
+		boost::tokenizer<boost::char_separator<char> > t( line, col );
+		boost::tokenizer<boost::char_separator<char> >::iterator i
+		    = t.begin();
+		string n = *i;
+		++i;
+		boost::tokenizer<boost::char_separator<char> > o( *i, space );
+		try {
+		    int v = boost::lexical_cast<int>( *o.begin() );
+		    if ( n == "MemTotal" )
+			total = v;
+		    else if ( n == "MemFree" || n == "Inactive" )
+			available += v;
+		} catch (  boost::bad_lexical_cast ) {
+		}
 	    }
 	}
+    } catch ( ... ) {
+	// total and available may be zero, but that's okay
     }
 }
