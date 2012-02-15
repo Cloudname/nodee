@@ -97,8 +97,14 @@ set<int> Port::busy( const char * filename )
 
 int Port::assignFree()
 {
-    set<int> taken4 = busy( "/proc/net/tcp" );
-    set<int> taken6 = busy( "/proc/net/tcp" );
+    set<int> taken4;
+    set<int> taken6;
+    try {
+	taken4 = busy( "/proc/net/tcp" );
+	taken6 = busy( "/proc/net/tcp6" );
+    } catch ( ... ) {
+	// we may not have /proc/net. ignore that.
+    }
     int p = 1025;
     while ( p < 65535 &&
 	    ( taken4.find( p ) != taken4.end() ||
