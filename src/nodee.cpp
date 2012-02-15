@@ -142,3 +142,50 @@ int main( int argc, char ** argv )
     ChoreKeeper k( i );
     k.start();
 }
+
+/*! \chapter index
+    \introduces ChoreKeeper HostStatus HttpServer HttpListener Init Process ServerSpec ZkClient
+
+    Nodee uses eight main classes, plus some adjuncts.
+    
+    Init is the mothership. It watches over the running processes.
+    When a new service is started, that always results in at least one
+    new Process object, which generally does nothing. The process does
+    something and Init watches over it. Init has its own thread.
+
+    Process merely records information about its process... and
+    contains a static function, Process::launch(), to launch new
+    processes.
+
+    ServerSpec is what Process uses to remember things about the
+    service. ServerSpec does the main json work, decoding and encoding
+    things for the HTTP clients.
+
+    HttpServer is the process that mostly calls Process::launch(). It
+    serves HTTP API requests to start/stop services and calls other
+    parts of nodee to do the work.
+
+    HttpListener helps HttpServer and creates new HttpServer objects
+    as needed; HttpListener is one of nodee's long-running threads.
+
+    HostStatus and ChoreKeeper look at the host nodee runs
+    on. HostStatus merely tells all comers about the host ("it has
+    umpty-foo gigabytes of RAM"), ChoreKeeper actually does some
+    work. If the host runs out of RAM, ChoreKeeper will discover that,
+    find out which service is most likely to make the difference
+    between useful service and thrashing, and kill that.
+
+    Finally, ZkClient is used by nodee to maintain state information
+    about the host in zookeeper. ZkClient uses no less than two
+    long-running threads.
+
+    The function main() does most of the setup.
+
+    Utility code for nodee comes from boost (1.40 or later) and the
+    C++ standard library (the old one, not TR1).
+
+    boost::filesystem changed API between 1.40 and 1.42, which causes
+    some scattered hackage around the nodee source. I (Arnt) think
+    having these turds is preferable to requiring a newer version
+    boost than what Ubuntu LTS offers.
+*/
