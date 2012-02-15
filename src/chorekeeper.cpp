@@ -29,27 +29,31 @@ using namespace std;
 
     The implementation is highly linux-specific; it gathers almost all
     of its data from the /proc file system.
-    
+
     The linux kernel includes an out-of-memory killer (oomkiller in
     kernel terms) but it's not suitable for cloudname. It acts much
     too slowly, and its choice of process is not well tuned for our
     needs.
 
-    Therefore, ChoreKeeper does the job itself. It scnas the system
+    Therefore, ChoreKeeper does the job itself. It scans the system
     quite often, looking for signs that the host may be thrashing. If
     it is, and continues to thrash for many seconds, then nodee picks
-    a service and kills it. When a service has been killed, nodee
-    refuses to kill another for a while, since the input data will be
-    unreliable due to the change of state. Thrashing continues for a
-    few moments after the kill, until the other services again have
-    their working set in RAM.
+    a service and kills it. The service may use more than one process.
+    When a service has been killed, nodee refuses to kill another for
+    a while, since the input data will be unreliable due to the change
+    of state. (The other services again need to read their working set
+    into RAM. Until that has happened, nodee cannot really interpret
+    its data.)
 
     ChoreKeeper has several algorithms for deciding which service to
-    kill. Its algorithms are much better than the kernel's, since
-    we're able to give it better information. For instance, by telling
-    nodee how much RAM a service typically and maximally should use,
-    we're giving nodee a good way to decide which server is using too
-    much memory.
+    kill (furthestOverPeak(), furthestOverExpected(), leastValuable(),
+    thrashingMost() and biggest()). Its algorithms are much better
+    than the kernel's, since we're able to give it better
+    information. For instance, by telling nodee how much RAM a service
+    typically and maximally should use, we're giving nodee a good way
+    to decide which server is using too much memory, and by
+    segregating services, we enable nodee to gather data per service,
+    not per process.
 
     There is no configuration; the class just does the right thing
     based on the ServerSpec json supplied by the cloudname users.
@@ -87,6 +91,8 @@ void ChoreKeeper::start()
 		jesus = furthestOverPeak();
 		if ( !jesus.valid() )
 		    jesus = furthestOverExpected();
+		if ( !jesus.valid() )
+		    jesus = thrashingMost();
 		if ( !jesus.valid() )
 		    jesus = leastValuable();
 		if ( !jesus.valid() )
