@@ -9,6 +9,7 @@
 #include "zkclient.h"
 #include "init.h"
 #include "conf.h"
+#include "log.h"
 
 #include <iostream>
 #include <fstream>
@@ -118,7 +119,7 @@ int main( int argc, char ** argv )
     }
 
     if ( geteuid() )
-	cerr << "Nodee: Running as non-root. "
+	info << "Nodee: Running as non-root. "
 	        "All services will use the same UID as nodee."
 	     << endl;
 
@@ -147,7 +148,7 @@ int main( int argc, char ** argv )
     \introduces ChoreKeeper HostStatus HttpServer HttpListener Init Process ServerSpec ZkClient
 
     Nodee uses eight main classes, plus some adjuncts.
-    
+
     Init is the mothership. It watches over the running processes.
     When a new service is started, that always results in at least one
     new Process object, which generally does nothing. The process does

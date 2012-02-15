@@ -1,6 +1,7 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
 #include "zkclient.h"
+#include "log.h"
 
 #include "hoststatus.h"
 
@@ -68,13 +69,19 @@ static void watcher( zhandle_t * zzh,
 
      \a server is in Zookeeper's usual format
      (10.0.10.10:3000,10.1.10.10:3000 or similar).
-   
+
      This constructor succeeds or aborts the program via ::exit().
 */
 
 ZkClient::ZkClient( const std::string & server )
     : zh( 0 )
 {
+    if ( server.empty() ) {
+	info << "nodee: Not connecting to Zookeeper."
+	     << endl;
+	return;
+    }
+
     int r;
 
     // for the moment, _DEBUG. I think this ought probably to be set
@@ -97,7 +104,7 @@ ZkClient::ZkClient( const std::string & server )
     boost::unique_lock<boost::mutex> lock( zkmutex );
     while ( !::initialised )
 	zkwaiter.wait( lock );
-    
+
     // zookeeper wants to tell us things. we don't want to listen.
     // still, we need a sacrificial buffer.
     char tmp[1025];
@@ -201,7 +208,7 @@ void ZkClient::start()
 
 /*! boost::thread wants to call start() by this name, so here's a
     wrapper around start().
-*/   
+*/
 
 void ZkClient::operator()()
 {

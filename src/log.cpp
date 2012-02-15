@@ -2,8 +2,8 @@
 
 #include "log.h"
 
-ostream info;
-ostream debug;
+std::ofstream info( "/dev/stderr" );
+std::ofstream debug( "/dev/stdout" );
 
 
 /*! \class Log log.h
@@ -26,6 +26,4 @@ ostream debug;
 
 void Log::setupStderr()
 {
-    info = cerr;
-    debug = cerr;
 }

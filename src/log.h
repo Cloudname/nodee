@@ -4,10 +4,11 @@
 #define LOG_H
 
 #include <iostream>
+#include <fstream>
 
 
-extern ostream & info;
-extern ostream & debug;
+extern std::ofstream info;
+extern std::ofstream debug;
 
 class Log {
 public:

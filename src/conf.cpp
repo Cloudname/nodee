@@ -29,5 +29,4 @@ string Conf::zk;
 
 void Conf::setDefaults()
 {
-    zk = "127.0.0.1:2181";
 }

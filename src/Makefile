@@ -10,7 +10,7 @@ dropprivileges: dropprivileges.c
 
 OBJECTS=chorekeeper.o httplistener.o httpserver.o init.o \
 	process.o serverspec.o service.o uid.o conf.o \
-	hoststatus.o port.o artifact.o zkclient.o
+	hoststatus.o port.o artifact.o zkclient.o log.o
 
 ifeq ($(shell ./platform.sh), oneiric)
 BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_system \

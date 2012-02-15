@@ -1,6 +1,7 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
 #include "chorekeeper.h"
+#include "log.h"
 
 #include <sys/types.h>
 #include <signal.h>
@@ -77,10 +78,22 @@ ChoreKeeper::ChoreKeeper( Init & i )
 }
 
 
-/*! The guts of the class. */
+/*! The guts of the class.
+
+    If the object is valid(), start() will do all the work. If it
+    isn't valid(), start() never returns and never spends hardly any
+    CPU cycles.
+*/
 
 void ChoreKeeper::start()
 {
+    if ( !valid() ) {
+	debug << "nodee: ChoreKeeper will not watch for RAM overflow"
+	      << endl;
+	while( true )
+	    ::sleep( 31415926 );
+    }
+
     while( true ) {
 	try {
 	    ::sleep( 1 );
@@ -523,4 +536,24 @@ Process ChoreKeeper::biggest() const
     }
 
     return p;
+}
+
+
+/*! Returns true if the ChoreKeeper is able to work effectively on
+    this OS, and false if not.
+*/
+
+bool ChoreKeeper::valid() const
+{
+    try {
+	if ( boost::filesystem::exists( "/proc/1/stat" ) &&
+	     boost::filesystem::exists( "/proc/vmstat" ) )
+	    return true;
+    } catch ( ... ) {
+	// I think this should not happen, but
+	// https://svn.boost.org/trac/boost/ticket/2725
+	// might make trouble. add the handler just in case.
+	return false;
+    }
+    return false;
 }

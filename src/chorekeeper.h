@@ -24,6 +24,8 @@ public:
     ChoreKeeper( Init & );
     virtual ~ChoreKeeper();
 
+    bool valid() const;
+
     void start();
 
     void detectThrashing();
@@ -39,7 +41,7 @@ public:
     Process biggest() const;
 
     void readProcVmstat( const char *, int &, int &, int & );
-    
+
     RunningProcess parseProcStat( string line )
 	throw ( boost::bad_lexical_cast );
 
