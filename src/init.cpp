@@ -17,6 +17,10 @@
     management. Init will be happy as long as nothing happens, and
     when the process (lowercase) exits, Init notices and informs the
     Process, so that the Process can take appropriate action.
+
+    Init is more or less a singleton. I don't like singletons, but in
+    this case the unix design forces our hand: Making more than one
+    object call ::wait() works poorly.
 */
 
 

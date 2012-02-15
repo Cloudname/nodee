@@ -16,9 +16,16 @@
 
 /*! \class HttpListener httplistener.h
 
-  The HttpListener class listens for connections from clients, and
-  when one arrives, it creates a suitable HttpServer in a thread of
-  its own.
+  The HttpListener class listens for connections from clients on a
+  single socket, and when one arrives, it creates a suitable
+  HttpServer in a thread of its own.
+
+  HttpListener has one particular weakness: Since it listens on one
+  socket, if nodee is run in a mixed ipv4/6 environment, nodee has to
+  create two HttpListener objects. Creating two may however fail,
+  leaving nodee with the unenviable task of finding out whether the
+  failure is innocent or serious. I didn't like putting ::exit() calls
+  in HttpListener, so I put all that logic in main.
 */
 
 

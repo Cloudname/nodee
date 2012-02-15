@@ -23,10 +23,36 @@ using namespace std;
 
 /*! \class ChoreKeeper chorekeeper.h
 
-    The ChoreKeeper class regularly performs various chores, such as
-    checking for RAM/CPU overload.
+    The ChoreKeeper class regularly performs various chores. At the
+    moment, the only chore is to check for RAM/CPU overload and kill a
+    suitable service.
 
-    There is no configuration; the class just does the right thing.
+    The implementation is highly linux-specific; it gathers almost all
+    of its data from the /proc file system.
+    
+    The linux kernel includes an out-of-memory killer (oomkiller in
+    kernel terms) but it's not suitable for cloudname. It acts much
+    too slowly, and its choice of process is not well tuned for our
+    needs.
+
+    Therefore, ChoreKeeper does the job itself. It scnas the system
+    quite often, looking for signs that the host may be thrashing. If
+    it is, and continues to thrash for many seconds, then nodee picks
+    a service and kills it. When a service has been killed, nodee
+    refuses to kill another for a while, since the input data will be
+    unreliable due to the change of state. Thrashing continues for a
+    few moments after the kill, until the other services again have
+    their working set in RAM.
+
+    ChoreKeeper has several algorithms for deciding which service to
+    kill. Its algorithms are much better than the kernel's, since
+    we're able to give it better information. For instance, by telling
+    nodee how much RAM a service typically and maximally should use,
+    we're giving nodee a good way to decide which server is using too
+    much memory.
+
+    There is no configuration; the class just does the right thing
+    based on the ServerSpec json supplied by the cloudname users.
 */
 
 
