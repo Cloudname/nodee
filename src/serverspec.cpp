@@ -8,6 +8,7 @@
 #include "serverspec.h"
 #include "conf.h"
 #include "port.h"
+#include "init.h"
 
 
 
@@ -53,9 +54,13 @@ ServerSpec::ServerSpec()
 
 /*! Parses a json \a specification and sets up an object. If the parsing
     failed, the object's coordinate() will be a null string afterwards.
+
+    \a init is needed in order to assign defaults that do not conflict
+    with any other Process \a init currently manages.
 */
 
-ServerSpec ServerSpec::parseJson( const string & specification )
+ServerSpec ServerSpec::parseJson( const string & specification,
+				  Init & init )
 {
     using boost::property_tree::ptree;
 
@@ -74,7 +79,16 @@ ServerSpec ServerSpec::parseJson( const string & specification )
     try {
 	int p = s.pt.get<int>( "port" );
     } catch ( ... ) {
-	s.pt.put( "port", Port::assignFree() );
+	set<int> used;
+
+	list<Process> & pl = init.processes();
+	list<Process>::iterator m( pl.begin() );
+	while ( m != pl.end() ) {
+	    used.insert( m->spec().port() );
+	    ++m;
+	}
+	
+	s.pt.put( "port", Port::assignFree( used ) );
     }
 
     // verify validity and clear the object if necessary

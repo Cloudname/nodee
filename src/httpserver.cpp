@@ -233,7 +233,7 @@ void HttpServer::respond()
     // install, uninstall, list artifacts
 
     if ( o == Post && p == "/service/start" ) {
-	ServerSpec s = ServerSpec::parseJson( b );
+	ServerSpec s = ServerSpec::parseJson( b, init );
 	if ( !s.valid() ) {
 	    string e = s.error();
 	    if ( e.empty() )
@@ -265,7 +265,7 @@ void HttpServer::respond()
     }
 
     if ( o == Post && p.substr( 18 ) == "/artifact/install/" ) {
-	ServerSpec s = ServerSpec::parseJson( b );
+	ServerSpec s = ServerSpec::parseJson( b, init );
 	if ( !s.valid() ) {
 	    send( httpResponse( 400, "text/plain",
 				"Parse error for the JSON body" ) );
@@ -449,5 +449,5 @@ void HttpServer::operator()()
 
 string HttpServer::body() const
 {
-    
+
 }

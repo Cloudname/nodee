@@ -19,7 +19,7 @@ public:
     ServerSpec();
     ServerSpec( const ServerSpec & );
 
-    static ServerSpec parseJson( const string & );
+    static ServerSpec parseJson( const string &, class Init & );
     string json() const;
 
     string coordinate() const;

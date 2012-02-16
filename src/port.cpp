@@ -85,7 +85,8 @@ set<int> Port::busy( const char * filename )
 }
 
 
-/*! Returns a free port on this host.
+/*! Returns a free port on this host, avoiding \a avoid (which is an
+    empty set by default).
 
     Ports used for any purpose are assumed to be used; if a process
     opens a TCP connection from TCP6 port 1025, this function will
@@ -95,7 +96,7 @@ set<int> Port::busy( const char * filename )
     The range used is 1025-65535; 65535 is returned as a last resort.
 */
 
-int Port::assignFree()
+int Port::assignFree( const set<int> & avoid )
 {
     set<int> taken4;
     set<int> taken6;
@@ -108,7 +109,8 @@ int Port::assignFree()
     int p = 1025;
     while ( p < 65535 &&
 	    ( taken4.find( p ) != taken4.end() ||
-	      taken6.find( p ) != taken4.end() ) )
+	      taken6.find( p ) != taken6.end() ||
+	      avoid.find( p ) != avoid.end() ) )
 	p++;
     return p;
 }

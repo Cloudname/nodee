@@ -495,6 +495,7 @@ BOOST_AUTO_TEST_CASE( ArtifactLister )
 
 BOOST_AUTO_TEST_CASE( ServerOptions )
 {
+    Init i;
     ServerSpec s = ServerSpec::parseJson(
 	"{"
 	"  \"coordinate\" : \"1.idee-prod.ideeuser.ie\","
@@ -510,7 +511,7 @@ BOOST_AUTO_TEST_CASE( ServerOptions )
 	"    \"maxrestarts\" : 10,"
 	"    \"enabled\" : true"
 	"  }"
-	"}"
+	"}", i
 	);
     BOOST_CHECK( s.valid() );
     map<string,string> o = s.startupOptions();

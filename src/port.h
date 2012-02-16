@@ -12,7 +12,7 @@ class Port
 {
 public:
     static set<int> busy( const char * );
-    static int assignFree();
+    static int assignFree( const std::set<int> & = set<int>() );
 };
 
 #endif
