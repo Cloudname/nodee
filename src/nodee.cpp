@@ -1,5 +1,6 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
+#include <sysexits.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +44,7 @@ int main( int argc, char ** argv )
 	( "help", "produce help message" )
 	( "config,C", value<string>(&cf)->default_value( CONFFILE ),
 	  "specify configuration file" )
+	( "show-config", "print configuration at startup" )
 	( "version,V", "show easter egg" );
 
     options_description conf( "Configuration file (and command-line) options" );
@@ -66,12 +68,33 @@ int main( int argc, char ** argv )
     variables_map vm;
 
     cli.add( conf );
-    store( parse_command_line( argc, argv, cli ), vm );
 
-    store( parse_environment( cli, "NODEE_" ), vm );
-
-    ifstream cfs( cf.c_str() );
-    store( parse_config_file( cfs, conf, false ), vm );
+    try {
+	store( parse_command_line( argc, argv, cli ), vm );
+	store( parse_environment( cli, "NODEE_" ), vm );
+	ifstream cfs( cf.c_str() );
+	store( parse_config_file( cfs, conf, false ), vm );
+    } catch ( unknown_option e ) {
+	cerr << "nodee: Unknown option "
+	     << e.get_option_name()
+	     << endl;
+	::exit( EX_USAGE );
+    } catch ( invalid_syntax e ) {
+	cerr << "nodee: Syntax error while parsing options."
+	     << endl; // boost::po has $%#@$@#$ error reporting
+	::exit( EX_USAGE );
+    } catch ( error e ) {
+	cerr << "nodee: Option parser complains about you."
+	     << endl
+	     << "       This will be reported to your superior."
+	     << endl;
+	::exit( EX_USAGE );
+    } catch ( ... ) {
+	cerr << "nodee: Unknown error while parsing command line "
+	        "or configuration file. Sorry."
+	     << endl;
+	::exit( EX_DATAERR );
+    }
 
     notify( vm );
 
@@ -99,6 +122,15 @@ int main( int argc, char ** argv )
 	    }
 	    Conf::depots[tmp[0]] = tmp[1];
 	}
+    }
+
+    if ( vm.count( "show-config" ) ) {
+	dumpdepots = true;
+	cout << "nodee: scriptdir is '" << Conf::scriptdir << "'" << endl
+	     << "nodee: basedir is '" << Conf::basedir << "'" <<  endl
+	     << "nodee: workdir is '" << Conf::workdir << "'" << endl
+	     << "nodee: artefactdir is '" << Conf::artefactdir <<  "'" << endl
+	     << "nodee: zk is '" << Conf::zk <<  "'" << endl;
     }
 
     if ( dumpdepots ) {
