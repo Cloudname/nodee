@@ -56,12 +56,15 @@ int main( int argc, char ** argv )
 	( "dir",
 	  value<string>( &Conf::basedir )->default_value( "/usr/local/nodee" ),
 	  "specify base directory" )
-	( "workdir",
+	( "work-dir",
 	  value<string>( &Conf::workdir )->default_value( "work" ),
-	  "specify work directory, relative to basedir" )
-	( "artefactdir",
+	  "specify work directory, relative to the base directory" )
+	( "artefact-dir",
 	  value<string>( &Conf::artefactdir )->default_value( "artefacts" ),
-	  "specify where to store artefacts, relative to basedir" )
+	  "specify where to store artefacts, relative to the base directory" )
+	( "script-dir",
+	  value<string>( &Conf::scriptdir )->default_value( "/etc/nodee/scripts" ),
+	  "specify where the download and install scripts live" )
 	( "zookeeper", value<string>( &Conf::zk ),
 	  "zookeeper location (e.g. FIXME)" );
 
@@ -143,6 +146,11 @@ int main( int argc, char ** argv )
 		 << endl;
 	    ++i;
 	}
+    }
+
+    if ( vm.count( "version" ) ) {
+	cout << "nodee: Version 0.0.0.1" << endl;
+	exit( 0 );
     }
 
     if ( vm.count( "help" ) ) {
