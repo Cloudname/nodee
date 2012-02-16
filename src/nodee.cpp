@@ -17,6 +17,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
+#include <boost/filesystem.hpp>
 
 #include <boost/algorithm/string.hpp>
 
@@ -127,12 +128,33 @@ int main( int argc, char ** argv )
 	}
     }
 
-    if ( vm.count( "show-config" ) ) {
+    bool fail = false;
+    
+    if ( !boost::filesystem::is_directory( Conf::basedir ) ) {
+	cerr << "Nodee: Cannot start up, base directory does not exist"
+	     << endl;
+	fail = true;
+    }
+    if ( !boost::filesystem::is_directory( Conf::basedir + "/" + Conf::workdir  ) ) {
+	cerr << "Nodee: Cannot start up, work directory does not exist"
+	     << endl;
+	fail = true;
+    }
+    if ( !boost::filesystem::is_directory( Conf::basedir + "/" + Conf::artefactdir ) ) {
+	cerr << "Nodee: Cannot start up, artefact directory does not exist"
+	     << endl;
+	fail = true;
+    }
+
+
+    if ( fail || vm.count( "show-config" ) ) {
 	dumpdepots = true;
 	cout << "nodee: scriptdir is '" << Conf::scriptdir << "'" << endl
 	     << "nodee: basedir is '" << Conf::basedir << "'" <<  endl
-	     << "nodee: workdir is '" << Conf::workdir << "'" << endl
-	     << "nodee: artefactdir is '" << Conf::artefactdir <<  "'" << endl
+	     << "nodee: workdir is '" << Conf::basedir << '/' 
+	     << Conf::workdir << "'" << endl
+	     << "nodee: artefactdir is '" << Conf::basedir << '/' 
+	     << Conf::artefactdir <<  "'" << endl
 	     << "nodee: zk is '" << Conf::zk <<  "'" << endl;
     }
 
@@ -157,6 +179,9 @@ int main( int argc, char ** argv )
 	cout << cli << endl;
 	exit( 0 );
     }
+
+    if ( fail )
+	::exit( EX_USAGE );
 
     if ( geteuid() )
 	info << "Nodee: Running as non-root. "
