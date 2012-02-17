@@ -188,8 +188,6 @@ int main( int argc, char ** argv )
 	        "All services will use the same UID as nodee."
 	     << endl;
 
-    Conf::scriptdir = "/usr/local/nodee/scripts";
-
     ZkClient zk( Conf::zk );
 
     Init i;

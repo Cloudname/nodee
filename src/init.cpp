@@ -1,6 +1,7 @@
 // Copyright Arnt Gulbrandsen <arnt@gulbrandsen.priv.no>; BSD-licensed.
 
 #include "init.h"
+#include "log.h"
 
 #include <boost/thread.hpp>
 
@@ -103,6 +104,9 @@ std::list<Process> & Init::processes()
 Process * Init::manage( const Process & p )
 {
     l.push_back( p );
+    debug << "nodee: Process count is now "
+	  << l.size()
+	  << endl;
     return &*l.rbegin();
 }
 

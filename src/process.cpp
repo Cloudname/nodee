@@ -2,6 +2,8 @@
 
 #include "process.h"
 
+#include "log.h"
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -74,6 +76,7 @@ void Process::fork()
 
     int tmp = ::fork();
     if ( tmp < 0 ) {
+	debug << "nodee: unknown error: fork failed" << endl;
 	// an error. record the problem somehow, then just return.
 	p = 0;
 	return;
@@ -87,12 +90,22 @@ void Process::fork()
 	    (void)::setregid( g, g );
 	if ( u )
 	    (void)::setreuid( u, u );
-	if ( now < waitUntil )
+	if ( now < waitUntil ) {
+	    debug << "nodee: Restarting child in " 
+		  << waitUntil - now 
+		  << " seconds"
+		  << endl;
 	    ::sleep( waitUntil - now );
+	}
 	start();
     } else {
 	// we're in the parent.
 	p = tmp;
+	debug << "nodee: Forked coordinate " 
+	      << s.coordinate()
+	      << " to pid "
+	      << p
+	      << endl;
 	waitUntil = now + s.restartPeriod();
     }
 }
@@ -112,6 +125,12 @@ void Process::handleExit( int status, int signal )
 {
     status = status;
     signal = signal;
+
+    debug << "nodee: Process " 
+	  << p
+	  << " exited with code "
+	  << status
+	  << endl;
 
     p = 0;
 
@@ -137,6 +156,7 @@ void Process::start()
     } else {
 	script = root() + "/" + script;
     }
+
     char * args[1025];
     args[0] = const_cast<char*>(script.c_str());
     int n = 1;
@@ -148,7 +168,15 @@ void Process::start()
 	++i;
     }
     args[n++] = 0;
+
+    debug << "nodee: Executing startup script " 
+	  << script
+	  << " using pid "
+	  << ::getpid()
+	  << endl;
+
     ::execv( script.c_str(), args );
+
     ::exit( EX_NOINPUT );
 }
 
@@ -181,7 +209,8 @@ void Process::launch( const ServerSpec & what, Init & init )
     // instead of trying to start the real thing
     map<string,string> options;
     options["--url"] = what.artifactUrl();
-    options["--filename"] = what.artifactFilename();
+    options["--filename"] = Conf::basedir + "/" + Conf::artefactdir + "/" +
+			    what.artifactFilename();
     if ( !what.md5().empty() )
 	options["--md5"] = what.md5();
     download.s.setStartupScript( Conf::scriptdir + "/download", options );
@@ -194,9 +223,9 @@ void Process::launch( const ServerSpec & what, Init & init )
 
     // all three are managed by init. close your eyes and don't notice
     // the gruesome hack.
-    download.next = init.manage( useful );
-    install.next = init.manage( download );
-    init.manage( install )->fork();
+    install.next = init.manage( useful );
+    download.next = init.manage( install );
+    init.manage( download )->fork();
 }
 
 
