@@ -23,7 +23,7 @@ using boost::property_tree::ptree;
 // HttpServer::respond(), it just didn't work here. I have no
 // idea. but right now I don't want to bother about it, I want to run
 // on aewc-cn-01.
-typedef list<Process> hack;
+typedef list<Process *> hack;
 
 /*! \class Service service.h
 
@@ -47,27 +47,27 @@ std::string Service::list( Init & init )
     hack & pl = init.processes(); // compiler protest at this line
     hack::iterator m( pl.begin() );
 
-    string prefix = "services." + boost::lexical_cast<string>( m->pid() );
+    string prefix = "services." + boost::lexical_cast<string>( (*m)->pid() );
 
     while ( m != pl.end() ) {
 	try {
-	    pt.put( prefix + ".coordinate", m->spec().coordinate() );
+	    pt.put( prefix + ".coordinate", (*m)->spec().coordinate() );
 	} catch ( ... ) {
 	    // if no coordinate is specified, we just don't emit any
 	}
 	try {
-	    pt.put( prefix + ".port", m->spec().port() );
+	    pt.put( prefix + ".port", (*m)->spec().port() );
 	} catch ( ... ) {
 	    // ditto port
 	}
 	try {
-	    pt.put( prefix + ".artifact", m->spec().artifact() );
+	    pt.put( prefix + ".artifact", (*m)->spec().artifact() );
 	} catch ( ... ) {
 	    // not emitting artifact is a bit shady, though
 	}
-	pt.put( prefix + ".value", m->spec().value() );
-	pt.put( prefix + ".rss", m->currentRss() );
-	pt.put( prefix + ".recentfaults", m->recentPageFaults() );
+	pt.put( prefix + ".value", (*m)->spec().value() );
+	pt.put( prefix + ".rss", (*m)->currentRss() );
+	pt.put( prefix + ".recentfaults", (*m)->recentPageFaults() );
 	++m;
     }
 

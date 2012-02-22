@@ -249,16 +249,16 @@ void HttpServer::respond()
     }
 
     if ( o == Post && p.substr( 0, 14 ) == "/service/stop/" ) {
-	Process s;
+	Process * s = 0;
 	try {
 	    s = init.find( boost::lexical_cast<int>( p.substr( 14 ) ) );
 	} catch ( boost::bad_lexical_cast ) {
 	}
-	if ( !s.valid() ) {
+	if ( !s ) {
 	    send( httpResponse( 400, "text/plain",
 				"No such service" ) );
 	} else {
-	    s.stop();
+	    s->stop();
 	    close();
 	}
 	return;

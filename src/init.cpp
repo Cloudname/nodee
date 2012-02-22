@@ -74,13 +74,16 @@ void Init::check()
 	signal = WTERMSIG( status );
 
     // find the relevant Process object, ping it and forget about it.
-    std::list<Process>::iterator i = l.begin();
-    while ( i != l.end() && i->pid() != pid )
+    std::list<Process *>::iterator i = l.begin();
+    while ( i != l.end() && (*i)->pid() != pid )
 	++i;
-    if ( i != l.end() && i->pid() == pid ) {
-	i->handleExit( exitStatus, signal );
-	if ( !i->pid() )
+    if ( i != l.end() && (*i)->pid() == pid ) {
+	(*i)->handleExit( exitStatus, signal );
+	if ( !(*i)->pid() ) {
+	    Process * tbd = *i;
 	    l.remove( *i );
+	    delete tbd;
+	}
     }
 }
 
@@ -89,7 +92,7 @@ void Init::check()
     should not change the list, but may change the included objects.
 */
 
-std::list<Process> & Init::processes()
+std::list<Process *> & Init::processes()
 {
     return l;
 }
@@ -101,27 +104,26 @@ std::list<Process> & Init::processes()
     Returns a pointer to the copied object.
 */
 
-Process * Init::manage( const Process & p )
+void Init::manage( Process * p )
 {
     l.push_back( p );
     debug << "nodee: Process count is now "
 	  << l.size()
 	  << endl;
-    return &*l.rbegin();
 }
 
 
-/*! Returns a copy of the Process object for \a pid, or an invalid
-    Process object if \a pid is not the pid of a managed service.
+/*! Returns a pointer to the Process object for \a pid, or an null
+    pointer if \a pid is not the pid of a managed service.
 */
 
-Process Init::find( int pid ) const
+Process * Init::find( int pid ) const
 {
-    std::list<Process>::const_iterator i = l.begin();
-    while ( i != l.end() && i->pid() != pid )
+    std::list<Process *>::const_iterator i = l.begin();
+    while ( i != l.end() && (*i)->pid() != pid )
 	++i;
     if ( i == l.end() )
-	return Process();
+	return 0;
     return *i;
 }
 

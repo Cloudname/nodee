@@ -34,11 +34,11 @@ public:
 
     void scanProcesses( const char *, int );
 
-    Process furthestOverPeak() const;
-    Process furthestOverExpected() const;
-    Process leastValuable() const;
-    Process thrashingMost() const;
-    Process biggest() const;
+    Process * furthestOverPeak() const;
+    Process * furthestOverExpected() const;
+    Process * leastValuable() const;
+    Process * thrashingMost() const;
+    Process * biggest() const;
 
     void readProcVmstat( const char *, int &, int &, int & );
 

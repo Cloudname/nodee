@@ -268,12 +268,12 @@ BOOST_AUTO_TEST_CASE( ScanProcesses )
     // mg2c: 201 should be assigned to mg2
     // mg2cc: 202 should be assigned to mg2
 
-    Process mg1;
-    mg1.fakefork( 100 );
+    Process * mg1 = new Process;
+    mg1->fakefork( 100 );
     i.manage( mg1 );
 
-    Process mg2;
-    mg2.fakefork( 200 );
+    Process * mg2 = new Process;
+    mg2->fakefork( 200 );
     i.manage( mg2 );
 
     makeFakeProc();
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE( ScanProcesses )
 
     BOOST_CHECK( x.biggest() == mg2 );
     BOOST_CHECK( x.thrashingMost() == mg2 );
-    BOOST_CHECK( !x.leastValuable().valid() );
+    BOOST_CHECK( !x.leastValuable() );
     // peak and expected are both zero, so...
     BOOST_CHECK( x.furthestOverPeak() == mg2 );
     BOOST_CHECK( x.furthestOverExpected() == mg2 );
@@ -299,10 +299,10 @@ BOOST_AUTO_TEST_CASE( ServiceList )
 {
     Init i;
 
-    Process p1;
-    p1.fakefork( 100 );
-    p1.setCurrentRss( 100 );
-    p1.setPageFaults( 29 );
+    Process * p1 = new Process;
+    p1->fakefork( 100 );
+    p1->setCurrentRss( 100 );
+    p1->setPageFaults( 29 );
 
     i.manage( p1 );
 

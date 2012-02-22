@@ -39,18 +39,14 @@
     The remaining functions all return information, from pid() and
     gid() to spec().
 
-    Some implementation notes: This class never kills or otherwise
-    affects the child process, it merely records information about
-    it. If objects of this class were to own or otherwise act on the
-    process they mimic, then Init couldn't copy and delete Process
-    objects quite so freely. The ability to treat Process objects as
-    values is central to Nodee's pointerlessness.
+    Implementation note: This class never kills or otherwise affects
+    the child process, it merely records information about it.
 */
 
 /*! Constructs a naked, invalid Process.
 
-    This is basically not useful. It's needed for e.g.
-    ChoreKeeper::biggest(), but can't be really used.
+    This is basically not useful. The unit tests use it, but it can't
+    really be used in anger.
 */
 
 Process::Process()
@@ -118,7 +114,8 @@ void Process::fork()
     process to terminate, if any. I assume that the signal is 0 if no
     signal intervened, but I haven't checked that.
 
-    Init will delete the Process after calling this.
+    Init will check whether the Process is valid() after calling this,
+    and delete the Process if not.
 */
 
 void Process::handleExit( int status, int signal )
@@ -194,16 +191,19 @@ void Process::launch( const ServerSpec & what, Init & init )
     // we have three processes: A useful process and two preliminary
     // chores (I only just managed to avoid the word foreplay, oops,
     // it snuck its way in, I'll be more disciplined from now on)
-    Process useful;
-    useful.assignUidGid();
+    Process * useful = new Process;
+    useful->assignUidGid();
 
-    Process install( useful.u, useful.g );
-    Process download( useful.u, useful.g );
+    Process * install = new Process( useful->u, useful->g );
+    Process * download = new Process( useful->u, useful->g );
 
     // each of them receive basically the same spec
-    useful.s = what;
-    download.s = what;
-    install.s = what;
+    useful->s = what;
+    download->s = what;
+    install->s = what;
+
+    install->next = useful;
+    download->next = install;
 
     // but we change the prelimiaries so they'll do their chores
     // instead of trying to start the real thing
@@ -213,19 +213,19 @@ void Process::launch( const ServerSpec & what, Init & init )
 			    what.artifactFilename();
     if ( !what.md5().empty() )
 	options["--md5"] = what.md5();
-    download.s.setStartupScript( Conf::scriptdir + "/download", options );
+    download->s.setStartupScript( Conf::scriptdir + "/download", options );
     options.erase( "--url" );
     options.erase( "--md5" );
-    options["--uid"] = boost::lexical_cast<string>( useful.u );
-    options["--gid"] = boost::lexical_cast<string>( useful.u );
-    options["--rootdir"] = useful.root();
-    install.s.setStartupScript( Conf::scriptdir + "/install", options );
+    options["--uid"] = boost::lexical_cast<string>( useful->u );
+    options["--gid"] = boost::lexical_cast<string>( useful->u );
+    options["--rootdir"] = useful->root();
+    install->s.setStartupScript( Conf::scriptdir + "/install", options );
 
-    // all three are managed by init. close your eyes and don't notice
-    // the gruesome hack.
-    install.next = init.manage( useful );
-    download.next = init.manage( install );
-    init.manage( download )->fork();
+    // all three are managed by init.
+    init.manage( download );
+    init.manage( install );
+    init.manage( useful );
+    download->fork();
 }
 
 

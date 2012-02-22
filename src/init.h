@@ -18,14 +18,14 @@ public:
     void start();
     void check();
 
-    std::list<Process>& processes();
+    std::list<Process *>& processes();
 
-    Process * manage( const Process & p );
+    void manage( Process * p );
 
-    Process find( int ) const;
+    Process * find( int ) const;
 
 private:
-    std::list<Process> l;
+    std::list<Process *> l;
 };
 
 #endif

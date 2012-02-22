@@ -81,10 +81,10 @@ ServerSpec ServerSpec::parseJson( const string & specification,
     } catch ( ... ) {
 	set<int> used;
 
-	list<Process> & pl = init.processes();
-	list<Process>::iterator m( pl.begin() );
+	list<Process *> & pl = init.processes();
+	list<Process *>::iterator m( pl.begin() );
 	while ( m != pl.end() ) {
-	    used.insert( m->spec().port() );
+	    used.insert( (*m)->spec().port() );
 	    ++m;
 	}
 	

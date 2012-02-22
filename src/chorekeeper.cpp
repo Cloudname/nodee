@@ -100,20 +100,20 @@ void ChoreKeeper::start()
 	    scanProcesses( "/proc", getpid() );
 	    detectThrashing();
 	    if ( isThrashing() ) {
-		Process jesus;
+		Process * jesus = 0;
 		jesus = furthestOverPeak();
-		if ( !jesus.valid() )
+		if ( !jesus )
 		    jesus = furthestOverExpected();
-		if ( !jesus.valid() )
+		if ( !jesus )
 		    jesus = thrashingMost();
-		if ( !jesus.valid() )
+		if ( !jesus )
 		    jesus = leastValuable();
-		if ( !jesus.valid() )
+		if ( !jesus )
 		    jesus = biggest();
-		if ( jesus.valid() ) {
+		if ( jesus ) {
 		    // we kill with signal 9, since we're already in a
 		    // bad state.
-		    ::kill( jesus.pid(), 9 );
+		    ::kill( jesus->pid(), 9 );
 		    // come to think of it, should we use
 		    // Process::stop()?
 
@@ -420,31 +420,31 @@ void ChoreKeeper::scanProcesses( const char * proc, int me )
 	++i;
     }
 
-    list<Process> & pl = init.processes();
-    list<Process>::iterator m( pl.begin() );
+    list<Process *> & pl = init.processes();
+    list<Process *>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	m->setCurrentRss( observed[m->pid()].rss );
-	m->setPageFaults( observed[m->pid()].majflt );
+	(*m)->setCurrentRss( observed[(*m)->pid()].rss );
+	(*m)->setPageFaults( observed[(*m)->pid()].majflt );
 	++m;
     }
 }
 
 
 /*! Scans the Process table and finds the process whose memory usage
-    is furthest above its stated peak. Returns an invalid Process if
+    is furthest above its stated peak. Returns a null pointer if
     none are above their peak.
 */
 
-Process ChoreKeeper::furthestOverPeak() const
+Process * ChoreKeeper::furthestOverPeak() const
 {
-    Process p;
-    list<Process> & pl = init.processes();
-    list<Process>::iterator m( pl.begin() );
+    Process * p = 0;
+    list<Process *> & pl = init.processes();
+    list<Process *>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	int over = m->currentRss() - m->spec().expectedPeakMemory();
+	int over = (*m)->currentRss() - (*m)->spec().expectedPeakMemory();
 	if ( over > 0 &&
-	     ( !p.valid() ||
-	       over > p.currentRss() - p.spec().expectedPeakMemory() ) )
+	     ( !p ||
+	       over > p->currentRss() - p->spec().expectedPeakMemory() ) )
 	    p = *m;
 	++m;
     }
@@ -453,20 +453,20 @@ Process ChoreKeeper::furthestOverPeak() const
 }
 
 /*! Scans the Process table and finds the process whose memory usage
-    is furthest above it stated typical memory usage. Returns an invalid
-    Process if none are above their expected typical size.
+    is furthest above it stated typical memory usage. Returns a null
+    pointer Process if none are above their expected typical size.
 */
 
-Process ChoreKeeper::furthestOverExpected() const
+Process * ChoreKeeper::furthestOverExpected() const
 {
-    Process p;
-    list<Process> & pl = init.processes();
-    list<Process>::iterator m( pl.begin() );
+    Process * p = 0;
+    list<Process *> & pl = init.processes();
+    list<Process *>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	int over = m->currentRss() - m->spec().expectedTypicalMemory();
+	int over = (*m)->currentRss() - (*m)->spec().expectedTypicalMemory();
 	if ( over > 0 &&
-	     ( !p.valid() ||
-	       over > p.currentRss() - p.spec().expectedTypicalMemory() ) )
+	     ( !p ||
+	       over > p->currentRss() - p->spec().expectedTypicalMemory() ) )
 	    p = *m;
 	++m;
     }
@@ -476,61 +476,69 @@ Process ChoreKeeper::furthestOverExpected() const
 
 
 /*! Scans the Process table and finds the least important process.
-    Returns an invalid Process if none are less important than the
+    Returns a null pointer if none are less important than the
     most important Process.
 */
 
-Process ChoreKeeper::leastValuable() const
+Process * ChoreKeeper::leastValuable() const
 {
-    Process max;
-    Process min;
-    list<Process> & pl = init.processes();
-    list<Process>::iterator m( pl.begin() );
+    Process * max = 0;
+    Process * min = 0;
+    list<Process *> & pl = init.processes();
+    list<Process *>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	if ( !max.valid() || max.spec().value() < m->spec().value() )
+	if ( !max || max->spec().value() < (*m)->spec().value() )
 	    max = *m;
-	if ( !min.valid() || min.spec().value() > m->spec().value() )
+	if ( !min || min->spec().value() > (*m)->spec().value() )
 	    min = *m;
 	++m;
     }
-    if ( min.valid() && min.spec().value() < max.spec().value() )
-	return min;
-    return Process();
+    if ( min && max && min->spec().value() >= max->spec().value() )
+	min = 0;
+    return min;
 }
 
 
 /*! Scans the Process table and finds the Process that's most negatively
-    affected by thrashing. Returns an invalid Process if none are noticeably
+    affected by thrashing. Returns a null pointer if none are noticeably
     worse affected than the others.
 */
 
-Process ChoreKeeper::thrashingMost() const
+Process * ChoreKeeper::thrashingMost() const
 {
-    Process p;
-    list<Process> & pl = init.processes();
-    list<Process>::iterator m( pl.begin() );
+    Process * worst = 0;
+    Process * least = 0;
+
+    list<Process *> & pl = init.processes();
+    list<Process *>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	if ( m->recentPageFaults() > p.recentPageFaults() )
-	    p = *m;
+	if ( !worst || (*m)->recentPageFaults() > least->recentPageFaults() )
+	    worst = *m;
+	if ( !least || (*m)->recentPageFaults() < least->recentPageFaults() )
+	    least = *m;
 	++m;
     }
 
-    return p;
+    if ( worst && least &&
+	 least->recentPageFaults() >= worst->recentPageFaults() )
+	worst = 0;
+
+    return worst;
 }
 
 
 /*! Scans the Process table and finds the process whose memory usage
-    is biggest. Returns an invalid Process only if no Processes are
+    is biggest. Returns a null pointer only if no Processes are
     being managed by Nodee.
 */
 
-Process ChoreKeeper::biggest() const
+Process * ChoreKeeper::biggest() const
 {
-    Process p;
-    list<Process> & pl = init.processes();
-    list<Process>::iterator m( pl.begin() );
+    Process * p = 0;
+    list<Process *> & pl = init.processes();
+    list<Process *>::iterator m( pl.begin() );
     while ( m != pl.end() ) {
-	if ( !p.valid() || m->currentRss() > p.currentRss() )
+	if ( !p || (*m)->currentRss() > p->currentRss() )
 	    p = *m;
 	++m;
     }
