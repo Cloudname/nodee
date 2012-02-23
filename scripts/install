@@ -12,14 +12,14 @@ while $(echo $1 | grep -q '^--') ; do
   case "$1" in
     --gid) gid=$2; shift ; shift ;;
     --uid) uid=$2; shift ; shift ;;
-    --root) root=$2; shift ; shift ;;
+    --rootdir) root=$2; shift ; shift ;;
     --filename) fn=$2; shift ; shift ;;
     *) echo unknown option $1 ; exit 1 ;;
   esac
 done
 
 [ -n "$gid" ] || { echo GID not specified; exit 1; }
-[ -n "$url" ] || { echo UID not specified; exit 1; }
+[ -n "$uid" ] || { echo UID not specified; exit 1; }
 [ -n "$root" ] || { echo Destination directory not specified; exit 1; }
 [ -n "$fn" ] || { echo Filename not specified; exit 1; }
 
@@ -27,10 +27,10 @@ done
 mkdir -p $root/tmp
 cd $root
 case $fn in
-  *.zip) unzip $fn ;;
+  *.zip) unzip -o $fn ;;
   *.tar.gz) tar zxf $fn ;;
-  *.jar) cp $fn . ;;
+  *.jar) cp -f $fn . ;;
   *) echo Unknown file type $fn ; exit 1 ;;
 esac
 
-chown -R $uid:$gid $work
+chown -R $uid:$gid .
