@@ -87,8 +87,8 @@ void Process::fork()
 	if ( u )
 	    (void)::setreuid( u, u );
 	if ( now < waitUntil ) {
-	    debug << "nodee: Restarting child in " 
-		  << waitUntil - now 
+	    debug << "nodee: Restarting child in "
+		  << waitUntil - now
 		  << " seconds"
 		  << endl;
 	    ::sleep( waitUntil - now );
@@ -97,7 +97,7 @@ void Process::fork()
     } else {
 	// we're in the parent.
 	p = tmp;
-	debug << "nodee: Forked coordinate " 
+	debug << "nodee: Forked coordinate "
 	      << s.coordinate()
 	      << " to pid "
 	      << p
@@ -123,7 +123,7 @@ void Process::handleExit( int status, int signal )
     status = status;
     signal = signal;
 
-    debug << "nodee: Process " 
+    debug << "nodee: Process "
 	  << p
 	  << " exited with code "
 	  << status
@@ -154,6 +154,9 @@ void Process::start()
 	script = root() + "/" + script;
     }
 
+    debug << "nodee: Executing startup script "
+	  << script;
+
     char * args[1025];
     args[0] = const_cast<char*>(script.c_str());
     int n = 1;
@@ -162,13 +165,12 @@ void Process::start()
     while ( i != o.end() && n < 1023 ) {
 	args[n++] = const_cast<char*>( i->first.c_str() );
 	args[n++] = const_cast<char*>( i->second.c_str() );
+	debug << " " << i->first << " " << i->second;
 	++i;
     }
     args[n++] = 0;
 
-    debug << "nodee: Executing startup script " 
-	  << script
-	  << " using pid "
+    debug << " using pid "
 	  << ::getpid()
 	  << endl;
 
