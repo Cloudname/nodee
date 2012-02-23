@@ -23,9 +23,6 @@ public:
     void manage( Process * p );
 
     Process * find( int ) const;
-
-private:
-    std::list<Process *> l;
 };
 
 #endif

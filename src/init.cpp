@@ -9,6 +9,9 @@
 #include <sys/wait.h>
 
 
+static std::list<Process *> l;
+
+
 /*! \class Init init.h
 
     The Init class manages all the subprocesses.
@@ -21,7 +24,8 @@
 
     Init is more or less a singleton. I don't like singletons, but in
     this case the unix design forces our hand: Making more than one
-    object call ::wait() works poorly.
+    object call ::wait() works poorly. You can make more than one
+    Init, but they actually will operate on the same Process list.
 */
 
 
@@ -38,7 +42,7 @@ Init::Init()
 
 Init::~Init()
 {
-    // nothing needed
+    l.clear();
 }
 
 
