@@ -10,6 +10,8 @@
 
 
 static std::list<Process *> l;
+static boost::mutex mutex;
+static boost::condition_variable managing;
 
 
 /*! \class Init init.h
@@ -59,14 +61,15 @@ void Init::start()
 
 void Init::check()
 {
+    boost::unique_lock<boost::mutex> lock( mutex );
+    while ( l.empty() )
+	managing.wait( lock );
+
     int status;
     int pid = ::wait( &status );
 
-    if ( pid <= 0 ) {
-	// we have no children to wait for.
-	::sleep( 2 );
+    if ( pid <= 0 )
 	return;
-    }
 
     // we now have a pid. find out what happened to it.
     int exitStatus = -1;
@@ -110,10 +113,13 @@ std::list<Process *> & Init::processes()
 
 void Init::manage( Process * p )
 {
+    boost::lock_guard<boost::mutex> lock( mutex );
     l.push_back( p );
     debug << "nodee: Process count is now "
 	  << l.size()
 	  << endl;
+    ::managing.notify_one();
+
 }
 
 
