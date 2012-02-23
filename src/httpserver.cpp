@@ -254,12 +254,14 @@ void HttpServer::respond()
 	    s = init.find( boost::lexical_cast<int>( p.substr( 14 ) ) );
 	} catch ( boost::bad_lexical_cast ) {
 	}
-	if ( !s ) {
+	if ( s ) {
+	    s->stop();
+	    send( httpResponse( 200, "application/json",
+				"Will stop, or try to",
+				s->spec().json() ) );
+	} else {
 	    send( httpResponse( 400, "text/plain",
 				"No such service" ) );
-	} else {
-	    s->stop();
-	    close();
 	}
 	return;
     }
