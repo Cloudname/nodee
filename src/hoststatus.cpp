@@ -172,3 +172,4 @@ int HostStatus::readProcUptime( const char * filename )
     }
     return 0;
 }
+

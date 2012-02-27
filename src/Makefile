@@ -23,8 +23,16 @@ BOOSTLIBS=-lboost_thread -lboost_filesystem -lboost_program_options \
 ZKINCLUDE=-I/usr/include/c-client-src
 endif
 
+ifeq (${VERSION}, )
+VERSION=$(shell whoami)-SNAPSHOT-$(shell git show --abbrev-commit --pretty=format:%H HEAD | head -1)
+endif
+
+ifeq (${DATE}, )
+DATE=$(shell date +%Y-%m-%d)
+endif
+
 .cpp.o: Makefile
-	${COMPILER} ${ZKINCLUDE} -g -c -o $@ -O0 $<
+	${COMPILER} ${ZKINCLUDE} -DVERSION=\"${VERSION}\" -DDATE=\"${DATE}\" -g -c -o $@ -O0 $<
 
 nodee: ${OBJECTS} nodee.o Makefile
 	${COMPILER} -g -o nodee -pthread ${OBJECTS} nodee.o ${BOOSTLIBS} 

@@ -129,7 +129,7 @@ int main( int argc, char ** argv )
     }
 
     bool fail = false;
-    
+
     if ( !boost::filesystem::is_directory( Conf::basedir ) ) {
 	cerr << "Nodee: Cannot start up, base directory does not exist"
 	     << endl;
@@ -151,9 +151,9 @@ int main( int argc, char ** argv )
 	dumpdepots = true;
 	cout << "nodee: scriptdir is '" << Conf::scriptdir << "'" << endl
 	     << "nodee: basedir is '" << Conf::basedir << "'" <<  endl
-	     << "nodee: workdir is '" << Conf::basedir << '/' 
+	     << "nodee: workdir is '" << Conf::basedir << '/'
 	     << Conf::workdir << "'" << endl
-	     << "nodee: artefactdir is '" << Conf::basedir << '/' 
+	     << "nodee: artefactdir is '" << Conf::basedir << '/'
 	     << Conf::artefactdir <<  "'" << endl
 	     << "nodee: zk is '" << Conf::zk <<  "'" << endl;
     }
@@ -171,7 +171,9 @@ int main( int argc, char ** argv )
     }
 
     if ( vm.count( "version" ) ) {
-	cout << "nodee: Version 0.0.0.1" << endl;
+	cout << "nodee: Version " << VERSION
+	     << ", built " DATE
+	     << endl;
 	exit( 0 );
     }
 
