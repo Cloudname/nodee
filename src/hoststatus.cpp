@@ -38,6 +38,7 @@ HostStatus::HostStatus()
 
     int total, available;
     readProcMeminfo( "/proc/meminfo", total, available );
+    int uptime = readProcUptime( "/proc/uptime" );
 
     // do I really want that prefix? no? not sure.
     string prefix = string("hosts.") + tmp;
@@ -45,6 +46,8 @@ HostStatus::HostStatus()
 	pt.put( prefix + ".totalmemory", total );
     if ( available )
 	pt.put( prefix + ".available", available );
+    if ( uptime )
+	pt.put( prefix + ".uptime", uptime );
     pt.put( prefix + ".cores", cores( "/proc/cpuinfo" ) );
 
     write_json( os, pt );
@@ -142,4 +145,30 @@ void HostStatus::readProcMeminfo( const char * filename,
     } catch ( ... ) {
 	// total and available may be zero, but that's okay
     }
+}
+
+
+/*! Reads \a filename, which is assumed to be /proc/uptime (unless a
+    different name is better for testing) and returns the host's
+    uptime in seconds.
+
+    Needed (only) for deciding which host is oldest and is therefore
+    next to be rebooted.
+*/
+
+int HostStatus::readProcUptime( const char * filename )
+{
+    try {
+	ifstream uptime( filename );
+	string line;
+	getline( uptime, line );
+	int i = 0;
+	while ( i < line.length() &&
+		line[i] >= '0' && line[i] <= '9' )
+	    i++;
+	if ( i )
+	    return boost::lexical_cast<int>( line.substr( 0, i ) );
+    } catch ( ... ) {
+    }
+    return 0;
 }

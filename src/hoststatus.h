@@ -14,8 +14,10 @@ public:
 
     static int cores( const char * );
 
+    static int readProcUptime( const char * );
+
     static void readProcMeminfo( const char *, int &, int & );
-    
+
 private:
     std::string j;
 };
