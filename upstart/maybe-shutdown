@@ -1,0 +1,29 @@
+#!/bin/sh
+# this script reboots the host, unless someone's looking at why
+# rebooting is necessary.
+
+# if the host is rebooting a lot, we slow down the rebooting to give
+# the poor long-suffering admins a chance to log in, and if any of
+# them do, we don't reboot, but merely shout at the admins. admins
+# are used to being shouted at.
+
+# first, see if the host is rebooting a lot. how many times has it
+# booted so far today?
+boots=$(last | sed '/^$/,$ d' | \
+        grep 'system boot.*'"$(date '+%b %d')" | \
+        wc -l | cut -f1)
+
+# this would be the sixth reboot today. ouch. give the admins a minute
+# to log in and look at what's up before rebooting again.
+[ $boots -ge 5 ] && sleep 60
+
+# so, did anyone log in? not counting zabbix, zabbix never fixes
+# anything.
+logins=$(who | grep -v zabbix | wc -l | cut -f1)
+
+# if so, scream loudly, otherwise, reboot
+if [ $logins -ge 1 ]; then
+    echo "Not rebooting automatically; you have to do what's needed" | wall
+else
+    echo /sbin/shutdown -r 10 'Automatic reboot to restart nodee'
+fi
