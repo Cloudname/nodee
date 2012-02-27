@@ -76,3 +76,14 @@ Release and versions
   --version. Hm. Or better, copy the one I already have into nodee.
 
 
+Nodee disruption
+
+  We can scan the cluster for the oldest host and shut it down
+  occasionally. That will ensure that we're always on the latest AMI,
+  that we're able to boot cleanly, and last but not least, that we're
+  able to cope with nodes going down.
+
+  Nodee now hands out the necessary information.
+
+  Shutdown isn't clean enough. There's no way to tell users that their
+  nodes will very shortly go away.
