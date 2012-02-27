@@ -47,9 +47,10 @@ std::string Service::list( Init & init )
     hack & pl = init.processes(); // compiler protest at this line
     hack::iterator m( pl.begin() );
 
-    string prefix = "services." + boost::lexical_cast<string>( (*m)->pid() );
 
     while ( m != pl.end() ) {
+	string prefix = "services." +
+			boost::lexical_cast<string>( (*m)->pid() );
 	try {
 	    pt.put( prefix + ".coordinate", (*m)->spec().coordinate() );
 	} catch ( ... ) {
